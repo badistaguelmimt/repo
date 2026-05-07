@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+}
+
+@layer utilities {
+  .neo-brutal-shadow {
+      box-shadow: 6px 6px 0px 0px rgba(0, 0, 0, 1);
+  }
+  .neo-brutal-shadow-sm {
+      box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  }
+  .neo-brutal-shadow-primary {
+      box-shadow: 6px 6px 0px 0px rgba(21, 66, 18, 1);
+  }
+  .brutalist-shadow {
+      box-shadow: 4px 4px 0px 0px rgba(21, 66, 18, 1);
+  }
+  .button-press:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px 0px rgba(0, 0, 0, 1);
+  }
+  .brutalist-shadow-hover:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px 0px rgba(21, 66, 18, 1);
+  }
+  .step-gradient {
+      background: linear-gradient(135deg, #fbfbe2 0%, #efefd7 100%);
+  }
+}
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-on-background);
+  overflow-x: hidden;
+  /* Rend le défilement plus doux */
+  scroll-behavior: smooth;
+}
+
+/* 🚀 ANIMATIONS CSS HAUTE PERFORMANCE (GPU) */
+.animate-in-fade {
+  opacity: 0;
+  animation: fadeInFast 0.4s ease-out forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes fadeInFast {
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Stabilisation des images pour éviter les sauts (flickering) */
+img {
+  content-visibility: auto;
+  background-color: #f3f4f6; /* Gris clair en attendant le chargement */
+}
+
+/* Optimisation du rendu des cartes */
+.animal-card, .product-card {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+

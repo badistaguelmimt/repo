@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="fr" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Adopty - La première plateforme d'adoption animale en Algérie. Trouvez votre compagnon idéal parmi nos pensionnaires." />
+    <title>Adopty - L'éveil naturel</title>
+
+    <!-- Connexion anticipée aux serveurs Google pour éliminer la latence DNS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+
+    <!-- Polices optimisées -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Chewy&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+  </head>
+  <body class="bg-[#fbfbe2] text-on-surface font-body selection:bg-secondary-container antialiased">
+    <div id="root">
+      <!-- Splash Screen Premium (visible pendant le chargement du JS) -->
+      <div id="adopty-splash" style="position:fixed;inset:0;background-color:#fbfbe2;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;font-family:'Plus Jakarta Sans', sans-serif;">
+        <div style="font-family:'Chewy', cursive;font-size:4rem;color:#154212;margin-bottom:1rem;animation:pulse 1.5s ease-in-out infinite;">Adopty</div>
+        <div style="width:120px;height:4px;background-color:#000;border-radius:2px;overflow:hidden;position:relative;">
+          <div style="position:absolute;height:100%;background-color:#154212;width:40%;animation:loading 1s infinite ease-in-out;"></div>
+        </div>
+        <p style="margin-top:1.5rem;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;color:#154212;font-size:0.75rem;">Chargement de l'univers Adopty...</p>
+        <style>
+          @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); opacity: 0.8; } }
+          @keyframes loading { 0% { left: -40%; } 100% { left: 100%; } }
+        </style>
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
