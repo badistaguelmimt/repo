@@ -14,7 +14,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 const SocketContext = createContext(null)
 
 export const SocketProvider = ({ children }) => {
-  const { getToken, isSignedIn } = useAuth()
+  const { getToken, isSignedIn, userId } = useAuth()
   const socketRef  = useRef(null)
   const [isConnected, setIsConnected] = useState(false)
 
@@ -30,7 +30,7 @@ export const SocketProvider = ({ children }) => {
         if (!token) return
 
         socket = io(API_URL, {
-          auth: { token },
+          auth: { token, userId: userId },
           transports: ['websocket', 'polling'],
           // Reconnexion automatique avec back-off exponentiel
           reconnection: true,
