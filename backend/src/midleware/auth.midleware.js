@@ -1,7 +1,6 @@
 import { getAuth } from "@clerk/express";
 import { ENV } from "../config/env.js";
 import { getUtilisateurByClerkId, getUtilisateurRolesById } from "../database/utilisateur.db.js";
-import { verifyToken } from "@clerk/backend";
 
 // Vérifie que la requête contient un token Clerk valide et que l'utilisateur existe en base.
 // Ce middleware est placé devant toutes les routes qui nécessitent une connexion.
@@ -33,8 +32,7 @@ export const protectRoute = [
 ];
 
 // Fonction utilitaire pour vérifier si un utilisateur possède un rôle donné.
-// Utilisée en interne par les middlewares de rôle ci-dessous.
-export const hasRole = async (utilisateurId, roleName) => {
+const hasRole = async (utilisateurId, roleName) => {
     try {
         const roles = await getUtilisateurRolesById(utilisateurId);
         return roles.some((role) => role.Nom.toLowerCase() === roleName.toLowerCase());
@@ -48,11 +46,8 @@ export const hasRole = async (utilisateurId, roleName) => {
 export const refugeOnly = async (req, res, next) => {
     try {
         if (!req.user) return res.status(401).json({ message: "Non autorisé" });
-
         const isRefuge = await hasRole(req.user.Id, "Refuge");
-        if (!isRefuge) {
-            return res.status(403).json({ message: "Accès réservé aux refuges" });
-        }
+        if (!isRefuge) return res.status(403).json({ message: "Accès réservé aux refuges" });
         next();
     } catch (error) {
         console.error("Erreur dans refugeOnly :", error);
@@ -64,11 +59,8 @@ export const refugeOnly = async (req, res, next) => {
 export const prestataireOnly = async (req, res, next) => {
     try {
         if (!req.user) return res.status(401).json({ message: "Non autorisé" });
-
         const isPrestataire = await hasRole(req.user.Id, "Prestataire");
-        if (!isPrestataire) {
-            return res.status(403).json({ message: "Accès réservé aux prestataires" });
-        }
+        if (!isPrestataire) return res.status(403).json({ message: "Accès réservé aux prestataires" });
         next();
     } catch (error) {
         console.error("Erreur dans prestataireOnly :", error);
@@ -76,24 +68,7 @@ export const prestataireOnly = async (req, res, next) => {
     }
 };
 
-// Restreint l'accès aux utilisateurs standard (rôle "Utilisateur")
-export const utilisateurOnly = async (req, res, next) => {
-    try {
-        if (!req.user) return res.status(401).json({ message: "Non autorisé" });
-
-        const isUtilisateur = await hasRole(req.user.Id, "Utilisateur");
-        if (!isUtilisateur) {
-            return res.status(403).json({ message: "Accès réservé aux utilisateurs standard" });
-        }
-        next();
-    } catch (error) {
-        console.error("Erreur dans utilisateurOnly :", error);
-        res.status(500).json({ message: "Erreur interne du serveur" });
-    }
-};
-
 // Restreint l'accès aux administrateurs.
-// On vérifie d'abord par email (plus simple), puis par rôle en base de données.
 export const adminOnly = async (req, res, next) => {
     try {
         if (!req.user) return res.status(401).json({ message: "Non autorisé" });
@@ -102,14 +77,10 @@ export const adminOnly = async (req, res, next) => {
             ? ENV.ADMIN_EMAIL.split(",").map((e) => e.trim())
             : [];
 
-        if (adminEmailList.includes(req.user.AdresseEmail)) {
-            return next();
-        }
+        if (adminEmailList.includes(req.user.AdresseEmail)) return next();
 
         const isAdmin = await hasRole(req.user.Id, "Admin");
-        if (!isAdmin) {
-            return res.status(403).json({ message: "Accès réservé aux administrateurs" });
-        }
+        if (!isAdmin) return res.status(403).json({ message: "Accès réservé aux administrateurs" });
 
         next();
     } catch (error) {
@@ -118,26 +89,19 @@ export const adminOnly = async (req, res, next) => {
     }
 };
 
-// Accepte plusieurs rôles possibles. Pratique pour les routes accessibles
-// à la fois par un refuge et un admin, par exemple.
+// Accepte plusieurs rôles possibles (ex: Refuge ou Admin peuvent créer un animal).
 export const hasAnyRole = (requiredRoles) => {
     return async (req, res, next) => {
         try {
             if (!req.user) return res.status(401).json({ message: "Non autorisé" });
 
             const userRoles = await getUtilisateurRolesById(req.user.Id);
-            const hasRequiredRole = userRoles.some((role) =>
-                requiredRoles.some(
-                    (required) => role.Nom.toLowerCase() === required.toLowerCase()
-                )
-            );
+            const roleNames = userRoles.map((r) => r.Nom.toLowerCase());
+            const allowed = requiredRoles.some((r) => roleNames.includes(r.toLowerCase()));
 
-            if (!hasRequiredRole) {
-                return res.status(403).json({
-                    message: `Accès refusé. Rôles acceptés : ${requiredRoles.join(", ")}`,
-                });
+            if (!allowed) {
+                return res.status(403).json({ message: `Accès refusé. Rôles acceptés : ${requiredRoles.join(", ")}` });
             }
-
             next();
         } catch (error) {
             console.error("Erreur dans hasAnyRole :", error);
@@ -146,38 +110,25 @@ export const hasAnyRole = (requiredRoles) => {
     };
 };
 
-// Autorise l'accès uniquement au propriétaire de la ressource (via req.params.id) ou à un admin.
-// Utile pour les routes de modification de profil, par exemple.
+// Autorise l'accès uniquement au propriétaire de la ressource ou à un admin.
 export const isOwnerOrAdmin = (req, res, next) => {
-    const resourceUserId = req.params.id;
-
     if (!req.user) return res.status(401).json({ message: "Non autorisé" });
 
-    const isOwner = req.user.Id.toString() === resourceUserId;
-    const isAdmin = ENV.ADMIN_EMAIL?.split(",")
-        .map((e) => e.trim())
-        .includes(req.user.AdresseEmail);
+    const isOwner = req.user.Id.toString() === req.params.id;
+    const isAdmin = ENV.ADMIN_EMAIL?.split(",").map((e) => e.trim()).includes(req.user.AdresseEmail);
 
     if (isOwner || isAdmin) return next();
-
     return res.status(403).json({ message: "Vous ne pouvez modifier que vos propres données" });
 };
 
 // Middleware d'authentification pour les connexions Socket.IO.
-// Clerk ne peut pas être utilisé directement avec socket.io, donc on vérifie le token JWT manuellement.
+// Le frontend envoie l'userId Clerk via socket.handshake.auth
 export const socketAuth = async (socket, next) => {
     try {
-        const token = socket.handshake.auth.token;
+        const clerkId = socket.handshake.auth?.userId;
+        if (!clerkId) return next(new Error("Utilisateur non identifié"));
 
-        if (!token) return next(new Error("Token manquant"));
-
-        const payload = await verifyToken(token, {
-            secretKey: process.env.CLERK_SECRET_KEY,
-        });
-
-        if (!payload?.sub) return next(new Error("Token invalide"));
-
-        const user = await getUtilisateurByClerkId(payload.sub);
+        const user = await getUtilisateurByClerkId(clerkId);
         if (!user) return next(new Error("Utilisateur introuvable"));
 
         socket.user = user;

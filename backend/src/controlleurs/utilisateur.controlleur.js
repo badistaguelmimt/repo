@@ -45,27 +45,17 @@ const pickEmailFromClaims = (authPayload) => toSafeString(
     || authPayload?.sessionClaims?.primaryEmailAddress
 );
 
-// Récupère un rôle par nom, le crée s'il n'existe pas encore.
-// Gère le cas de création concurrente avec un double-check après insertion.
+// Récupère un rôle par nom dans la BDD. Si le rôle n'existe pas encore, le crée.
 const ensureRoleByName = async (roleName) => {
-    let role = await getRoleByName(roleName);
-    if (role) return role;
+    const existingRole = await getRoleByName(roleName);
+    if (existingRole) return existingRole;
 
-    let insertedRoleId = null;
-    try {
-        insertedRoleId = await createRole({
-            Nom: roleName,
-            Description: ROLE_DESCRIPTIONS[roleName] || `Role ${roleName}`,
-        });
-    } catch {
-        // Création concurrente possible — on relit simplement le rôle
-    }
+    const newRoleId = await createRole({
+        Nom: roleName,
+        Description: ROLE_DESCRIPTIONS[roleName] || `Role ${roleName}`,
+    });
 
-    role = await getRoleByName(roleName);
-    if (!role && insertedRoleId) {
-        return { Id: insertedRoleId, Nom: roleName, Description: ROLE_DESCRIPTIONS[roleName] || `Role ${roleName}` };
-    }
-    return role;
+    return { Id: newRoleId, Nom: roleName };
 };
 
 export async function createAccountControlleur(req, res) {
