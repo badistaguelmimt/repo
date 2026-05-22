@@ -447,3 +447,57 @@ export async function banUtilisateurControlleur(req, res) {
         res.status(500).json({ message: "Erreur serveur" });
     }
 }
+
+// GET /api/utilisateurs/admin/stats — Statistiques réelles pour le dashboard admin
+export async function getAdminStatsControlleur(req, res) {
+    try {
+        const queries = [
+            db.query("SELECT COUNT(*) as count FROM utilisateur"),
+            db.query("SELECT COUNT(*) as count FROM animal"),
+            db.query("SELECT COUNT(*) as count FROM animal WHERE Statut = 'Urgent'"),
+            db.query("SELECT COUNT(*) as count FROM refuge"),
+            db.query("SELECT COUNT(*) as count FROM profil_prestataire"),
+            db.query("SELECT COUNT(*) as count FROM signalement"),
+            db.query("SELECT COUNT(*) as count FROM signalement s JOIN statut st ON s.Statut = st.Id WHERE LOWER(st.Nom) LIKE '%attente%'"),
+            db.query("SELECT COUNT(*) as count FROM demande_adoption"),
+            db.query(`
+                SELECT COUNT(*) as count FROM demande_adoption da
+                JOIN statut st ON da.Statut = st.Id
+                WHERE MONTH(da.DateDemande) = MONTH(CURDATE()) AND YEAR(da.DateDemande) = YEAR(CURDATE())
+            `),
+            db.query("SELECT COALESCE(SUM(c.Total_prix), 0) as total FROM commande c"),
+            db.query(`
+                SELECT COUNT(*) as count FROM commande c
+                JOIN statut st ON c.Statut = st.Id
+                WHERE LOWER(st.Nom) LIKE '%attente%'
+            `),
+        ];
+
+        const results = await Promise.all(queries);
+
+        const [
+            [usersRows], [animauxRows], [urgentsRows],
+            [refugesRows], [prestatairesRows],
+            [signalementsRows], [signalementsAttenteRows],
+            [adoptionsRows], [adoptionsMoisRows],
+            [caRows], [commandesAttenteRows],
+        ] = results;
+
+        res.status(200).json({
+            utilisateurs:         usersRows[0].count,
+            animauxTotal:         animauxRows[0].count,
+            animauxUrgent:        urgentsRows[0].count,
+            refuges:              refugesRows[0].count,
+            prestatairesActifs:   prestatairesRows[0].count,
+            signalementsTotal:    signalementsRows[0].count,
+            signalementsEnAttente: signalementsAttenteRows[0].count,
+            adoptionsTotal:       adoptionsRows[0].count,
+            adoptionsMois:        adoptionsMoisRows[0].count,
+            caBoutique:           Number(caRows[0].total),
+            commandesEnAttente:   commandesAttenteRows[0].count,
+        });
+    } catch (error) {
+        console.error("Erreur getAdminStatsControlleur:", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+}

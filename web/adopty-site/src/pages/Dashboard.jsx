@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react'
 import { PageTransition, FadeIn } from '../components/Animations'
 import StatCard from '../components/ui/StatCard'
-import {
-  statsAdmin, adoptionsMensuelles, commandesRecentes,
-  signalementsRecents, animaux as animauxMock, prestataires as prestatairesMock
-} from '../data/mockData'
-import { getAnimaux, getAnnonces, getPrestataires, getProduits, getRefuges, getSignalements } from '../services/publicApi'
-import { verifyRefuge, resolveSignalement, getAllUsers, banUser, deleteAnimal, updateAnimal } from '../services/authApi'
+import { adoptionsMensuelles } from '../data/mockData'
+import { getAnimaux, getAnnonces, getPrestataires, getRefuges, getSignalements } from '../services/publicApi'
+import { verifyRefuge, resolveSignalement, getAllUsers, banUser, deleteAnimal, updateAnimal, getAdminStats } from '../services/authApi'
 import { mapAnimals } from '../hooks/useAnimal'
 import { mapCommandes } from '../hooks/useCommandes'
 import { mapPrestataires } from '../hooks/usePrestataires'
@@ -57,16 +54,18 @@ const TableEmptyState = ({ colSpan, icon = 'inbox', message = 'Aucune donnee dis
 
 const Dashboard = () => {
   const [activeSection, setActiveSection] = useState('overview')
-  const [isMockMode, setIsMockMode] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [apiIssues, setApiIssues] = useState([])
-  const [animauxData, setAnimauxData] = useState(animauxMock)
-  const [commandesData, setCommandesData] = useState(commandesRecentes)
-  const [signalementsData, setSignalementsData] = useState(signalementsRecents)
-  const [prestatairesData, setPrestatairesData] = useState(prestatairesMock)
+  const [animauxData, setAnimauxData] = useState([])
+  const [commandesData, setCommandesData] = useState([])
+  const [signalementsData, setSignalementsData] = useState([])
+  const [prestatairesData, setPrestatairesData] = useState([])
   const [refugesData, setRefugesData] = useState([])
   const [usersData, setUsersData] = useState([])
-  const [dashboardStats, setDashboardStats] = useState(statsAdmin)
+  const [dashboardStats, setDashboardStats] = useState({
+    animauxTotal: 0, animauxUrgent: 0, adoptionsMois: 0, adoptionsTotal: 0,
+    caBoutique: 0, commandesEnAttente: 0, signalementsMois: 0, signalementsTotal: 0,
+    prestatairesActifs: 0, utilisateurs: 0,
+  })
 
   // États pour l'édition Admin
   const [editingAnimal, setEditingAnimal] = useState(null)
@@ -78,79 +77,55 @@ const Dashboard = () => {
     const loadDashboard = async () => {
       setIsLoading(true)
       try {
-        const sources = [
-          { key: 'animaux', label: 'Animaux', request: getAnimaux() },
-          { key: 'annonces', label: 'Annonces', request: getAnnonces() },
-          { key: 'produits', label: 'Produits', request: getProduits() },
-          { key: 'signalements', label: 'Signalements', request: getSignalements() },
-          { key: 'prestataires', label: 'Prestataires', request: getPrestataires() },
-          { key: 'refuges', label: 'Refuges', request: getRefuges() },
-          { key: 'commandes', label: 'Commandes', request: apiAuthRequest({ url: '/api/checkout/all-orders', method: 'get' }) },
-          { key: 'utilisateurs', label: 'Utilisateurs', request: getAllUsers() },
-        ]
-
-        const results = await Promise.allSettled(sources.map((source) => source.request))
-
-        const [animauxRes, annoncesRes, produitsRes, signalementsRes, prestatairesRes, refugesRes, commandesRes, usersRes] = results
+        // Chargement parallèle : stats réelles + listes pour les tableaux
+        const [statsRes, animauxRes, signalementsRes, prestatairesRes, refugesRes, commandesRes, usersRes, annoncesRes] =
+          await Promise.allSettled([
+            getAdminStats(),
+            getAnimaux(),
+            getSignalements(),
+            getPrestataires(),
+            getRefuges(),
+            apiAuthRequest({ url: '/api/checkout/all-orders', method: 'get' }),
+            getAllUsers(),
+            getAnnonces(),
+          ])
 
         const toArray = (result) =>
           result.status === 'fulfilled' && Array.isArray(result.value) ? result.value : []
 
-        const mappedAnimaux = mapAnimals(toArray(animauxRes))
-        const mappedCommandes = mapCommandes(toArray(commandesRes))
+        // Stats réelles depuis l'endpoint dédié
+        if (statsRes.status === 'fulfilled' && statsRes.value) {
+          const s = statsRes.value
+          setDashboardStats({
+            animauxTotal:       s.animauxTotal        ?? 0,
+            animauxUrgent:      s.animauxUrgent       ?? 0,
+            adoptionsMois:      s.adoptionsMois       ?? 0,
+            adoptionsTotal:     s.adoptionsTotal      ?? 0,
+            caBoutique:         s.caBoutique          ?? 0,
+            commandesEnAttente: s.commandesEnAttente  ?? 0,
+            signalementsMois:   s.signalementsEnAttente ?? 0,
+            signalementsTotal:  s.signalementsTotal   ?? 0,
+            prestatairesActifs: s.prestatairesActifs  ?? 0,
+            utilisateurs:       s.utilisateurs        ?? 0,
+          })
+        }
+
+        // Données pour les tableaux
+        const mappedAnimaux     = mapAnimals(toArray(animauxRes))
+        const mappedCommandes   = mapCommandes(toArray(commandesRes))
         const mappedPrestataires = mapPrestataires(toArray(prestatairesRes))
-        const allSignalements = toArray(signalementsRes)
-        const allAnnonces = toArray(annoncesRes)
-        const allProduits = toArray(produitsRes)
-        const allRefuges = toArray(refugesRes)
+        const allAnnonces       = toArray(annoncesRes)
         setAnnoncesRaw(allAnnonces)
 
-        const finalAnimaux = mappedAnimaux.length > 0 ? mappedAnimaux : animauxMock
-        const finalCommandes = mappedCommandes.length > 0 ? mappedCommandes : commandesRecentes
-        const finalSignalements = allSignalements.length > 0 ? allSignalements : signalementsRecents
-        const finalPrestataires = mappedPrestataires.length > 0 ? mappedPrestataires : prestatairesMock
-
-        setAnimauxData(finalAnimaux)
-        setCommandesData(finalCommandes)
-        setSignalementsData(finalSignalements)
-        setPrestatairesData(finalPrestataires)
-        setRefugesData(allRefuges)
+        setAnimauxData(mappedAnimaux)
+        setCommandesData(mappedCommandes)
+        setSignalementsData(toArray(signalementsRes))
+        setPrestatairesData(mappedPrestataires)
+        setRefugesData(toArray(refugesRes))
         setUsersData(toArray(usersRes))
 
-        setDashboardStats({
-          animauxTotal: finalAnimaux.length || statsAdmin.animauxTotal,
-          animauxUrgent: finalAnimaux.filter((a) => a.urgent).length || statsAdmin.animauxUrgent,
-          adoptionsMois: allAnnonces.length || statsAdmin.adoptionsMois,
-          adoptionsTotal: allAnnonces.length || statsAdmin.adoptionsTotal,
-          caBoutique:
-            allProduits.reduce((sum, p) => sum + (Number(p.Prix ?? p.prix ?? 0) * Number(p.Stock ?? p.stock ?? 1)), 0)
-            || statsAdmin.caBoutique,
-          commandesEnAttente:
-            finalCommandes.filter((commande) => String(commande.statut).toLowerCase().includes('attente')).length,
-          signalementsMois: finalSignalements.length || statsAdmin.signalementsMois,
-          signalementsTotal: finalSignalements.length || statsAdmin.signalementsTotal,
-          prestatairesActifs: finalPrestataires.length || statsAdmin.prestatairesActifs,
-          utilisateurs: allRefuges.length || statsAdmin.utilisateurs,
-        })
-
-        const hasFallbackData =
-          mappedAnimaux.length === 0 ||
-          mappedCommandes.length === 0 ||
-          allSignalements.length === 0 ||
-          allAnnonces.length === 0 ||
-          allProduits.length === 0 ||
-          mappedPrestataires.length === 0 ||
-          allRefuges.length === 0
-
-        setIsMockMode(hasFallbackData)
-        const failed = []
-        results.forEach((result, index) => {
-          if (result.status === 'rejected') {
-            normalizeApiError(result.reason)
-            failed.push(sources[index].label)
-          }
-        })
-        setApiIssues(failed)
+      } catch (err) {
+        normalizeApiError(err)
       } finally {
         setIsLoading(false)
       }
@@ -296,16 +271,6 @@ const Dashboard = () => {
           {/* Top bar */}
           <div className="bg-[#fbfbe2] border-b-4 border-black px-8 py-5 flex items-center justify-between sticky top-0 z-30">
             <div>
-              {isMockMode && (
-                <span className="inline-block px-3 py-1 bg-[#fff1c2] text-[#7a4a00] border-2 border-black font-bold text-[10px] uppercase tracking-wider mb-2">
-                  Mode mock actif
-                </span>
-              )}
-              {apiIssues.length > 0 && (
-                <p className="text-[11px] font-bold text-[#7a4a00] mb-2">
-                  Sources API indisponibles: {apiIssues.join(', ')}
-                </p>
-              )}
               <h1 className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl text-primary">
                 {NAV_ITEMS.find(n => n.id === activeSection)?.label || 'Dashboard'}
               </h1>
@@ -320,6 +285,7 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
+
 
           <div className="p-8">
             {isLoading && (

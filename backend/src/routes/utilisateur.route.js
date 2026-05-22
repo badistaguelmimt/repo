@@ -11,6 +11,7 @@ router.post("/bootstrap", utilisateur.bootstrapCurrentUtilisateurControlleur);
 
 // Route admin only - liste tous les utilisateurs
 router.get("/", protectRoute, adminOnly, utilisateur.getAllAccountsControlleur);
+router.get("/admin/stats", protectRoute, adminOnly, utilisateur.getAdminStatsControlleur);
 router.put("/:id/ban", protectRoute, adminOnly, utilisateur.banUtilisateurControlleur);
 
 // Routes de lecture protégées (propriétaire ou admin)

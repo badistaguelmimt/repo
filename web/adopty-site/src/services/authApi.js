@@ -187,6 +187,11 @@ export const banUser = async (id) => {
     return apiAuthRequest({ url: `/api/utilisateurs/${id}/ban`, method: "put" });
 };
 
+// Stats réelles pour le dashboard admin (vraies requêtes COUNT en BDD)
+export const getAdminStats = async () => {
+    return apiAuthRequest({ url: "/api/utilisateurs/admin/stats", method: "get" });
+};
+
 // Historique des commandes de l'utilisateur connecté
 export const getMyOrders = async (userId) => {
     return apiAuthRequest({ url: `/api/commandes/utilisateur/${userId}`, method: "get" });
