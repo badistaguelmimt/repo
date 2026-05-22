@@ -7,6 +7,7 @@ import { mapProduit } from '../hooks/useProduit'
 import { mapRefuge } from '../hooks/useRefuge'
 import { useCart } from '../context/CartContext'
 import { useRequireAuthAction } from '../hooks/useRequireAuthAction'
+import { useRoleAccess } from '../hooks/useRoleAccess'
 import Badge from '../components/ui/Badge'
 import {
   getUtilisateurByClerkId,
@@ -15,6 +16,7 @@ import {
   getWishlistLines,
   addLigneWishlist,
   removeLigneWishlist,
+  getUtilisateurRefuges,
 } from '../services/authApi'
 
 const ProductDetail = () => {
@@ -27,6 +29,10 @@ const ProductDetail = () => {
   const [isLoading, setIsLoading] = useState(true)
   const { addToCart } = useCart()
   const { requireAuthAction } = useRequireAuthAction()
+  const { isRefuge, backendUserId } = useRoleAccess()
+
+  // Anti-réflexivité : un refuge ne peut pas acheter ses propres produits
+  const [isSelfProduct, setIsSelfProduct] = useState(false)
 
   // Wishlist state
   const [wishlistId, setWishlistId] = useState(null)
@@ -99,6 +105,18 @@ const ProductDetail = () => {
     }
     loadWishlist()
   }, [isSignedIn, userId, id])
+
+  // Anti-réflexivité : vérifier si ce produit appartient au refuge de l'utilisateur
+  useEffect(() => {
+    if (!isRefuge || !backendUserId || !produitData?.idRefuge) return
+    getUtilisateurRefuges(backendUserId)
+      .then(refuges => {
+        if (!Array.isArray(refuges)) return
+        const owns = refuges.some(r => String(r.Id ?? r.id) === String(produitData.idRefuge))
+        setIsSelfProduct(owns)
+      })
+      .catch(() => {})
+  }, [isRefuge, backendUserId, produitData])
 
   /** Bascule l'état wishlist du produit courant */
   const handleToggleWishlist = useCallback(() => {
@@ -208,20 +226,31 @@ const ProductDetail = () => {
                 </div>
 
                 <div className="flex gap-3">
-                  <button
-                    onClick={handleAddToCart}
-                    disabled={produit.stock === 0}
-                    className="flex-1 bg-primary text-white py-5 px-8 border-[4px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-4 group font-['Plus_Jakarta_Sans'] font-extrabold text-xl uppercase active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Ajouter au panier
-                    <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">add_shopping_cart</span>
-                  </button>
+                  {isSelfProduct ? (
+                    /* Refuge manager — ne peut pas acheter son propre produit */
+                    <div className="flex-1 flex items-center justify-center gap-3 py-5 px-8 bg-surface-container border-[4px] border-black rounded-xl">
+                      <span className="material-symbols-outlined text-2xl text-on-surface-variant">block</span>
+                      <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-on-surface-variant uppercase tracking-wider text-sm">
+                        Vous ne pouvez pas acheter votre propre produit
+                      </span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={handleAddToCart}
+                      disabled={produit.stock === 0}
+                      className="flex-1 bg-primary text-white py-5 px-8 border-[4px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all flex items-center justify-center gap-4 group font-['Plus_Jakarta_Sans'] font-extrabold text-xl uppercase active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Ajouter au panier
+                      <span className="material-symbols-outlined text-2xl group-hover:rotate-12 transition-transform">add_shopping_cart</span>
+                    </button>
+                  )}
                   <button
                     onClick={handleToggleWishlist}
-                    disabled={wishlistLoading}
-                    title={isInWishlist ? 'Retirer de la wishlist' : 'Ajouter à la wishlist'}
+                    disabled={wishlistLoading || isSelfProduct}
+                    title={isSelfProduct ? 'Votre produit' : isInWishlist ? 'Retirer de la wishlist' : 'Ajouter à la wishlist'}
                     className={`w-16 h-16 flex items-center justify-center border-[4px] border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all rounded-xl flex-shrink-0
                       ${isInWishlist ? 'bg-red-50 text-red-500' : 'bg-white text-on-surface-variant'}
+                      ${isSelfProduct ? 'opacity-30 cursor-not-allowed' : ''}
                       disabled:opacity-50`}
                   >
                     <span

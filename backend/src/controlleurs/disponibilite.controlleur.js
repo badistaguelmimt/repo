@@ -1,9 +1,9 @@
-import { createDisponibilite, deleteDisponibilite, getAllDisponibilites, getDisponibiliteById, updateDisponibilite } from "../database/disponibilite.db.js";
+import { createDisponibilite, deleteDisponibilite, getAllDisponibilites, getDisponibiliteById, updateDisponibilite, getDisponibilitesOfPrestataireId } from "../database/disponibilite.db.js";
 import { getProfilPrestataireById } from "../database/profil_prestataire.db.js";
 
 export async function createDisponibiliteControlleur(req,res) {
     try {
-        const { IdProfil,DateDebut,DateFin,Recurrence,Frequence,Disponibilite } = req.body;
+        const { IdProfil,DateDebut,DateFin,Recurrence,Frequence,Disponibilite,RecurrenceFin } = req.body;
         const toDbValue = (v) => v === undefined ? null : v;
 
         const isMissing = (v) => v === undefined || v === null || v === "";
@@ -23,7 +23,8 @@ export async function createDisponibiliteControlleur(req,res) {
             DateFin: toDbValue(DateFin),
             Recurrence: toDbValue(Recurrence),
             Frequence: toDbValue(Frequence),
-            Disponibilite: !!Disponibilite 
+            Disponibilite: !!Disponibilite,
+            RecurrenceFin: toDbValue(RecurrenceFin)
         })
 
         res.status(201).json({ message: "Disponibilite crée avec succès", id: requete });
@@ -36,7 +37,7 @@ export async function createDisponibiliteControlleur(req,res) {
 export async function updateDisponibiliteControlleur(req,res) {
     try {
         const { id } = req.params;
-        const { IdProfil,DateDebut,DateFin,Recurrence,Frequence,Disponibilite } = req.body;
+        const { IdProfil,DateDebut,DateFin,Recurrence,Frequence,Disponibilite,RecurrenceFin } = req.body;
         const toDbValue = (v) => v === undefined ? null : v;
 
         const dispo = await getDisponibiliteById(id);
@@ -55,7 +56,8 @@ export async function updateDisponibiliteControlleur(req,res) {
             DateFin: toDbValue(DateFin),
             Recurrence: toDbValue(Recurrence),
             Frequence: toDbValue(Frequence),
-            Disponibilite: Disponibilite !== undefined ? !!Disponibilite : dispo.Disponibilite
+            Disponibilite: Disponibilite !== undefined ? !!Disponibilite : dispo.Disponibilite,
+            RecurrenceFin: RecurrenceFin !== undefined ? toDbValue(RecurrenceFin) : dispo.RecurrenceFin
         });
         if (affectedRows === 0) {
             return res.status(404).json({ message: "Disponibilite non trouvée" });
@@ -122,14 +124,14 @@ export async function getAllDisponibilitesControlleur(req,res) {
 export async function getProfilOfDisponibiliteControlleur(req,res) {
     try {
         const { Profil } = req.params;
-        const profil = await getProfilPrestataireById(Profil);
-        if (!profil) {
-            return res.status(404).json({ message: "Disponibilite a un profil inexistant !(non trouvé)" });
+        const dispos = await getDisponibilitesOfPrestataireId(Profil);
+        if (!dispos) {
+            return res.status(404).json({ message: "Aucune disponibilité trouvée pour ce profil prestataire." });
         }
-        res.status(200).json(profil);
+        res.status(200).json(dispos);
         
     } catch (error) {
-        console.error("Erreur lors de l'obtention de l'animal de l'annonce:", error);
+        console.error("Erreur lors de l'obtention des disponibilités du prestataire:", error);
         res.status(500).json({ message: "Erreur interne du serveur" });
     }
 }

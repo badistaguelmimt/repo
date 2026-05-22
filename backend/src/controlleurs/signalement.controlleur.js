@@ -7,19 +7,10 @@ import {
   deleteSignalement,
 } from "../database/signalement.db.js";
 import { db } from "../config/db.js";
+import { resolveStatutId } from "../services/cache.service.js";
 
-// ── Cache statuts en mémoire ──────────────────────────────────────────────────
-let _statutCache = null;
-const resolveStatutId = async (label) => {
-  if (!_statutCache) {
-    const [rows] = await db.query("SELECT Id, Statut FROM statut");
-    _statutCache = rows;
-  }
-  const found = _statutCache.find(
-    (s) => s.Statut?.toLowerCase() === String(label).toLowerCase()
-  );
-  return found?.Id ?? 2; // fallback: Id 2 = "En attente"
-};
+// resolveStatutId est importé depuis cache.service.js (TTL 5 min, partagé)
+const resolveStatut = (label) => resolveStatutId(db, label);
 
 // ── POST /api/signalements ────────────────────────────────────────────────────
 // Utilisateur authentifié signale un problème (animal en danger, abus, etc.)
@@ -37,7 +28,7 @@ export async function createSignalementControlleur(req, res) {
       });
     }
 
-    const statutId = await resolveStatutId("En attente");
+    const statutId = await resolveStatut("En attente");
 
     const id = await createSignalement({
       IdUtilisateur: req.user.Id,
@@ -117,7 +108,7 @@ export async function resolveSignalementControlleur(req, res) {
     const sig = await getSignalementById(id);
     if (!sig) return res.status(404).json({ message: "Signalement non trouvé." });
 
-    const statutId = isNaN(statut) ? await resolveStatutId(statut) : Number(statut);
+    const statutId = isNaN(statut) ? await resolveStatut(statut) : Number(statut);
     await resolveSignalement(id, statutId);
 
     return res.status(200).json({ message: "Signalement mis à jour avec succès." });

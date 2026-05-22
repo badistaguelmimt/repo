@@ -26,4 +26,9 @@ export const endpoints = {
     reservations: "/api/reservations",
     races: "/api/races",
     statuts: "/api/statuts",
+
+    // Disponibilités prestataires
+    disponibilites: "/api/disponibilites",
+    disponibiliteById: (id) => `/api/disponibilites/${id}`,
+    disponibilitesByProfil: (profilId) => `/api/disponibilites/profil_prestataire/${profilId}`,
 };

@@ -3,6 +3,8 @@ import { PageTransition, FadeIn } from '../components/Animations'
 import ProductCard from '../components/ui/ProductCard'
 import Pagination from '../components/ui/Pagination'
 import { useProduits } from '../hooks/useProduits'
+import { useRoleAccess } from '../hooks/useRoleAccess'
+import { getUtilisateurRefuges } from '../services/authApi'
 
 const CATEGORIES = ['Tous', 'Alimentation', 'Jouets', 'Accessoires', 'Hygiène', 'Santé']
 const SORTS = [
@@ -20,7 +22,21 @@ const Boutique = () => {
   const [prixMax,     setPrixMax]     = useState('')
   const [stockOnly,   setStockOnly]   = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [ownedRefugeId, setOwnedRefugeId] = useState(null)
   const { produits: productsData, isLoading } = useProduits()
+  const { isRefuge, backendUserId, isSignedIn } = useRoleAccess()
+
+  // Anti-réflexivité : si l'utilisateur est un gestionnaire de refuge,
+  // on récupère son refuge pour empêcher l'achat de ses propres produits
+  useEffect(() => {
+    if (!isRefuge || !isSignedIn || !backendUserId) return
+    getUtilisateurRefuges(backendUserId)
+      .then(refuges => {
+        const first = Array.isArray(refuges) ? refuges[0] : null
+        if (first?.Id ?? first?.id) setOwnedRefugeId(String(first.Id ?? first.id))
+      })
+      .catch(() => {}) // silencieux
+  }, [isRefuge, isSignedIn, backendUserId])
 
   const maxPrixData = useMemo(
     () => Math.ceil(Math.max(0, ...productsData.map(p => Number(p.prix) || 0))),
@@ -173,7 +189,7 @@ const Boutique = () => {
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-                  {paginated.map((p, i) => <ProductCard key={p.id} produit={p} delay={i * 0.07} />)}
+                  {paginated.map((p, i) => <ProductCard key={p.id} produit={p} delay={i * 0.07} ownedRefugeId={ownedRefugeId} />)}
                 </div>
                 <Pagination currentPage={currentPage} totalPages={totalPages}
                   onPageChange={page => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }) }} />

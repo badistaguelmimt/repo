@@ -26,6 +26,11 @@ export const useStartConversation = () => {
     }
     if (!targetUserId) return
 
+    // Anti-réflexivité : on ne peut pas se contacter soi-même
+    if (currentUser && String(currentUser.id) === String(targetUserId)) {
+      console.warn('[useStartConversation] Tentative de conversation avec soi-même ignorée.')
+      return
+    }
     setIsLoading(true)
     setError(null)
 

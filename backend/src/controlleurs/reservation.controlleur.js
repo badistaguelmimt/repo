@@ -12,32 +12,11 @@ import {
 import { getProfilPrestataireByUtilisateurId } from "../database/profil_prestataire.db.js";
 import { getUtilisateurRefugesById } from "../database/utilisateur.db.js";
 import { db } from "../config/db.js";
+import { resolveStatutId, resolveTypeServiceId } from "../services/cache.service.js";
 
-// ── Cache statuts en mémoire ──────────────────────────────────────────────────
-let _statutCache = null;
-let _typeServiceCache = null;
-
-const resolveStatutId = async (label) => {
-  if (!_statutCache) {
-    const [rows] = await db.query("SELECT Id, Statut FROM statut");
-    _statutCache = rows;
-  }
-  const found = _statutCache.find(
-    (s) => s.Statut?.toLowerCase() === String(label).toLowerCase()
-  );
-  return found?.Id ?? 2; // fallback "En attente"
-};
-
-const resolveTypeServiceId = async (label) => {
-  if (!_typeServiceCache) {
-    const [rows] = await db.query("SELECT Id, Type FROM type_service");
-    _typeServiceCache = rows;
-  }
-  const found = _typeServiceCache.find(
-    (t) => t.Type?.toLowerCase() === String(label).toLowerCase()
-  );
-  return found?.Id ?? null;
-};
+// ── Wrappers vers le cache centralis\u00e9 (TTL 5 min, auto-expiration) ───────────
+const resolveStatut      = (label) => resolveStatutId(db, label);
+const resolveTypeService = (label) => resolveTypeServiceId(db, label);
 
 // ── POST /api/reservations ────────────────────────────────────────────────────
 // Client : créer une réservation chez un prestataire
@@ -59,9 +38,9 @@ export async function createReservationControlleur(req, res) {
       });
     }
 
-    const statutId = await resolveStatutId("En attente");
+    const statutId = await resolveStatut("En attente");
     const typeServiceId = isNaN(TypeService)
-      ? await resolveTypeServiceId(TypeService)
+      ? await resolveTypeService(TypeService)
       : Number(TypeService);
 
     if (!typeServiceId) {
@@ -183,7 +162,7 @@ export async function updateReservationStatusControlleur(req, res) {
       return res.status(403).json({ message: "Vous pouvez uniquement annuler votre réservation." });
     }
 
-    const statutId = isNaN(Statut) ? await resolveStatutId(Statut) : Number(Statut);
+    const statutId = isNaN(Statut) ? await resolveStatut(Statut) : Number(Statut);
     await updateReservationStatut(id, statutId);
     const updated = await getReservationById(id);
     return res.status(200).json({ message: "Statut mis à jour.", reservation: updated });
@@ -202,7 +181,7 @@ export async function updateReservationControlleur(req, res) {
 
     const data = { ...reservation, ...req.body };
     if (req.body.Statut && isNaN(req.body.Statut)) {
-      data.Statut = await resolveStatutId(req.body.Statut);
+      data.Statut = await resolveStatut(req.body.Statut);
     }
     await updateReservation(id, data);
     return res.status(200).json({ message: "Réservation modifiée avec succès." });

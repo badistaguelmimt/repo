@@ -37,6 +37,7 @@ export const mapProduits = (produits = []) => produits.map(mapProduit)
 
 export const mapRefuge = (refuge) => ({
   id:             String(refuge.Id ?? refuge.id ?? ''),
+  idUtilisateur:  String(refuge.IdUtilisateur ?? refuge.idUtilisateur ?? ''), // nécessaire pour anti-réflexivité
   nom:            refuge.Nom ?? refuge.nom ?? 'Refuge',
   lieu:           refuge.Nom ?? refuge.lieu ?? 'Refuge',
   ville:          refuge.Ville ?? refuge.ville ?? 'Ville inconnue',
@@ -44,7 +45,7 @@ export const mapRefuge = (refuge) => ({
   adresse:        refuge.Addresse ?? refuge.adresse ?? 'Adresse inconnue',
   telephone:      refuge.Telephone ?? refuge.telephone ?? 'N/A',
   email:          refuge.email ?? 'contact@adopty.local',
-  horaires:       refuge.horaires ?? 'Horaires non renseignes',
+  horaires:       refuge.horaires ?? 'Horaires non renseignés',
   description:    refuge.Description ?? refuge.description ?? 'Refuge partenaire Adopty.',
   capacite:       refuge.capacite ?? 0,
   surface:        refuge.surface ?? 'N/A',

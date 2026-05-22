@@ -9,22 +9,16 @@
 import { useEffect, useState } from 'react'
 import { getPrestataires } from '../services/publicApi'
 
-// ── Constantes type de service (ex-prestataireMapper) ─────────────────────────
-
+// ── Constantes type de service ───────────────────────────────────────────────
+// Seuls les 2 services disponibles sur la plateforme (IDs correspondant à la table `type_service` DB)
 export const TYPE_SERVICE_MAP = {
-  1: 'Toilettage',
-  2: 'Éducation canine',
   3: 'Pet-sitting',
   4: 'Promenade',
-  5: 'Vétérinaire',
 }
 
 export const TYPE_SERVICE_ID = {
-  'Toilettage':      1,
-  'Éducation canine':2,
-  'Pet-sitting':     3,
-  'Promenade':       4,
-  'Vétérinaire':     5,
+  'Pet-sitting': 3,
+  'Promenade':   4,
 }
 
 export const SERVICES_DISPONIBLES = ['Pet-sitting', 'Promenade']

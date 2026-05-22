@@ -4,8 +4,8 @@ import { protectRoute, prestataireOnly } from "../midleware/auth.midleware.js";
 
 const router = Router()
 
-// Routes spéciales de lecture protégées
-router.get("/profil_prestataire/:Profil", protectRoute, disponibilite.getProfilOfDisponibiliteControlleur);
+// Route publique — lecture des disponibilités par profil prestataire (accès non authentifié OK)
+router.get("/profil_prestataire/:Profil", disponibilite.getProfilOfDisponibiliteControlleur);
 
 // Routes protégées - création, modification, suppression (prestataires seulement)
 router.post("/", protectRoute, prestataireOnly, disponibilite.createDisponibiliteControlleur);

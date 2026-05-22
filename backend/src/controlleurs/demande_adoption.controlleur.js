@@ -9,19 +9,11 @@ import {
 } from "../database/demande_adoption.db.js";
 import { getUtilisateurRefugesById } from "../database/utilisateur.db.js";
 import { db } from "../config/db.js";
+import { resolveStatutId } from "../services/cache.service.js";
 
-// ── Résoudre un label statut → Id (avec cache en mémoire) ───────────────────
-let _statutCache = null;
-const resolveStatutId = async (label) => {
-  if (!_statutCache) {
-    const [rows] = await db.query("SELECT Id, Statut FROM statut");
-    _statutCache = rows;
-  }
-  const found = _statutCache.find(
-    (s) => s.Statut?.toLowerCase() === String(label).toLowerCase()
-  );
-  return found?.Id ?? 2; // fallback: Id 2 = "En attente"
-};
+// resolveStatutId est importé depuis cache.service.js (TTL 5 min, partagé)
+// Signature locale : (label) => resolveStatutId(db, label)
+const resolveStatut = (label) => resolveStatutId(db, label);
 
 // ── POST /api/demandes-adoption ───────────────────────────────────────────────
 export const createDemandeControlleur = async (req, res) => {
@@ -48,7 +40,7 @@ export const createDemandeControlleur = async (req, res) => {
       return res.status(409).json({ message: "Vous avez déjà soumis une demande d'adoption pour cet animal." });
     }
 
-    const statutId = await resolveStatutId("En attente");
+    const statutId = await resolveStatut("En attente");
 
     const newId = await createDemandeAdoption({
       IdAnimal,
@@ -134,7 +126,7 @@ export const updateStatutControlleur = async (req, res) => {
     }
 
     // Accepte un Id numérique ou un label textuel
-    const statutId = isNaN(Statut) ? await resolveStatutId(Statut) : Number(Statut);
+    const statutId = isNaN(Statut) ? await resolveStatut(Statut) : Number(Statut);
 
     await updateDemandeStatut(req.params.id, statutId, CommentaireRetour);
     return res.status(200).json({ message: "Statut mis à jour avec succès." });

@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import { PageTransition, FadeIn } from '../components/Animations'
-import { getMyPrestataireProfile, getMyPrestataireReservations, updatePrestataireProfile, updateReservationStatusAsPrestataire, deleteDisponibilite, getDisponibilitesByProfil } from '../services/authApi'
+import { getMyPrestataireProfile, getMyPrestataireReservations, updateReservationStatusAsPrestataire, deleteDisponibilite, getDisponibilitesByProfil } from '../services/authApi'
 import { normalizeApiError } from '../lib/http'
 import { useRoleAccess } from '../hooks/useRoleAccess'
 import Modal from '../components/ui/Modal'
 import PrestataireProfileForm from '../components/forms/PrestataireProfileForm'
 import AvailabilityForm from '../components/forms/AvailabilityForm'
+import AvailabilityCalendar from '../components/ui/AvailabilityCalendar'
 
 const toCurrency = (value) => `${Number(value || 0).toLocaleString('fr-FR')} DZD`
 
@@ -25,6 +26,7 @@ const STATUS_MAP = {
 
 const getStatusStyle = (statut) => STATUS_MAP[statut] || { label: statut || 'Inconnu', cls: 'bg-surface-container' }
 
+// Labels correspondant aux IDs de la table `type_service` en DB
 const TYPE_SERVICE_LABELS = {
   1: 'Toilettage',
   2: 'Éducation canine',
@@ -42,10 +44,22 @@ const PrestataireDashboard = () => {
   // Créneaux de disponibilité réels chargés depuis la BDD
   const [myDisponibilites, setMyDisponibilites] = useState([])
 
+  // Vue calendrier / liste pour les disponibilités
+  const [calView, setCalView] = useState('calendrier')
+
   // Modales
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
   const [isAvailModalOpen, setIsAvailModalOpen] = useState(false)
   const [editingAvail, setEditingAvail] = useState(null)
+
+  // Ouvre le formulaire pré-rempli avec le créneau sélectionné dans le calendrier
+  const handleSlotSelected = useCallback((slotInfo) => {
+    setEditingAvail({
+      DateDebut: slotInfo.start.toISOString(),
+      DateFin: slotInfo.end.toISOString(),
+    })
+    setIsAvailModalOpen(true)
+  }, [])
 
   const loadData = useCallback(async () => {
     if (!backendUserId) return
@@ -226,45 +240,100 @@ const PrestataireDashboard = () => {
           </div>
         </FadeIn>
 
-        {/* Disponibilités */}
+        {/* Disponibilités — vue tabulée Calendrier / Liste */}
         <FadeIn className="bg-surface-container-lowest border-4 border-black rounded-xl overflow-hidden shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-          <div className="px-6 py-4 border-b-4 border-black bg-surface-container flex items-center justify-between">
+          {/* En-tête avec onglets */}
+          <div className="px-6 py-4 border-b-4 border-black bg-surface-container flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-['Plus_Jakarta_Sans'] font-extrabold text-primary flex items-center gap-2">
               <span className="material-symbols-outlined">schedule</span>
               Mes disponibilités
+              <span className="ml-2 px-2 py-0.5 bg-primary text-white text-xs font-bold rounded-full border border-black">
+                {myDisponibilites.length}
+              </span>
             </h2>
-            <button
-              onClick={openAddAvail}
-              className="px-4 py-2 bg-secondary text-white border-2 border-black font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
-            >
-              + Ajouter
-            </button>
-          </div>
-          <div className="p-6">
-            <p className="text-xs font-bold text-on-surface-variant italic mb-4">
-              Définissez vos créneaux pour que les clients puissent réserver vos services.
-            </p>
-            {myDisponibilites.length === 0 ? (
-              <p className="text-sm text-on-surface-variant">Aucune disponibilité enregistrée. Cliquez sur &laquo; + Ajouter &raquo; pour commencer.</p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {myDisponibilites.map(dispo => {
-                  /* Formatage du créneau depuis les champs DB : JourSemaine, HeureDebut, HeureFin */
-                  const label = `${dispo.JourSemaine ?? 'Jour ?'} – ${dispo.HeureDebut ?? '--:--'} à ${dispo.HeureFin ?? '--:--'}`
-                  return (
-                    <span key={dispo.Id} className="flex items-center gap-1.5 px-3 py-1 bg-surface-container border-2 border-black rounded-full text-xs font-bold">
-                      {label}
-                      <button
-                        onClick={() => handleDeleteAvail(dispo.Id)}
-                        className="ml-1 text-error hover:text-on-error-container transition-colors"
-                        title="Supprimer ce créneau"
-                      >
-                        <span className="material-symbols-outlined" style={{fontSize:'14px'}}>close</span>
-                      </button>
-                    </span>
-                  )
-                })}
+            <div className="flex items-center gap-2">
+              {/* Onglets vue */}
+              <div className="flex border-2 border-black rounded-lg overflow-hidden">
+                <button
+                  onClick={() => setCalView('calendrier')}
+                  className={`px-3 py-1.5 text-xs font-bold transition-colors flex items-center gap-1 ${
+                    calView === 'calendrier' ? 'bg-primary text-white' : 'bg-white text-on-surface-variant hover:bg-surface-container'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">calendar_month</span> Calendrier
+                </button>
+                <button
+                  onClick={() => setCalView('liste')}
+                  className={`px-3 py-1.5 text-xs font-bold transition-colors border-l-2 border-black flex items-center gap-1 ${
+                    calView === 'liste' ? 'bg-primary text-white' : 'bg-white text-on-surface-variant hover:bg-surface-container'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-sm">list</span> Liste
+                </button>
               </div>
+              <button
+                onClick={openAddAvail}
+                className="px-4 py-2 bg-secondary text-white border-2 border-black font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all"
+              >
+                + Ajouter
+              </button>
+            </div>
+          </div>
+
+          <div className="p-4">
+            {calView === 'calendrier' ? (
+              /* ─── Vue Calendrier react-big-calendar ─── */
+              <AvailabilityCalendar
+                disponibilites={myDisponibilites}
+                onSlotClick={handleSlotSelected}
+                onEventClick={(event) => {
+                  setEditingAvail(event.resource)
+                  setIsAvailModalOpen(true)
+                }}
+              />
+            ) : (
+              /* ─── Vue Liste ─── */
+              <>
+                <p className="text-xs font-bold text-on-surface-variant italic mb-4">
+                  Définissez vos créneaux pour que les clients puissent réserver vos services.
+                </p>
+                {myDisponibilites.length === 0 ? (
+                  <p className="text-sm text-on-surface-variant">
+                    Aucune disponibilité enregistrée. Cliquez sur « + Ajouter » pour commencer.
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {myDisponibilites.map(dispo => {
+                      const debut = dispo.DateDebut
+                        ? new Date(dispo.DateDebut).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                        : '?'
+                      const fin = dispo.DateFin
+                        ? new Date(dispo.DateFin).toLocaleString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
+                        : '?'
+                      const isAvailable = dispo.Disponibilite
+                      return (
+                        <span
+                          key={dispo.Id}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 border-2 border-black rounded-full text-xs font-bold ${
+                            isAvailable ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+                          }`}
+                        >
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isAvailable ? 'bg-green-600' : 'bg-red-600'}`} />
+                          {debut} → {fin}
+                          {dispo.Recurrence && <span className="opacity-60 ml-1 text-[10px]">↻ {dispo.Recurrence}</span>}
+                          <button
+                            onClick={() => handleDeleteAvail(dispo.Id)}
+                            className="ml-1 hover:opacity-60 transition-opacity"
+                            title="Supprimer ce créneau"
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>close</span>
+                          </button>
+                        </span>
+                      )
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </FadeIn>

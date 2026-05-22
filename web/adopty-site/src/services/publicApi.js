@@ -67,3 +67,14 @@ export const getProduitPhotos = async (id) => {
 export const getProduitMateriaux = async (id) => {
     return apiRequest(`${endpoints.produits}/materiaux/${id}`);
 };
+
+// ── Disponibilités prestataire (lecture publique) ─────────────────────────────
+
+/**
+ * Récupère les disponibilités d'un profil prestataire (route publique, sans auth).
+ * Utilisé par la page ProfilPrestataire visible de tous les visiteurs.
+ */
+export const getDisponibilitesByProfil = async (profilId) => {
+    return apiRequest(endpoints.disponibilitesByProfil(profilId)).catch(() => []);
+};
+
