@@ -159,4 +159,4 @@ export const getRacePhotosById = async (id) => {
     return rows.map(row => new Photo(row));
 }
 
-//  normalement on a pas besoin d'autres requetes speciale todo:(enleve ce commentaire a la fin du projet)
+// jpense qu'on a tout ce quil faut comme requetes ici

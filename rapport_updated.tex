@@ -1,0 +1,1283 @@
+\documentclass[12pt,a4paper]{report}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage[left=2.5cm,right=2.5cm,top=3cm,bottom=3cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{mdframed}
+\usepackage{colortbl}
+\usepackage[table]{xcolor}
+\usepackage{ragged2e}
+\usepackage{placeins}
+\usepackage[colorlinks=true,linkcolor=black,urlcolor=black,
+            pdftitle={Rapport Adopty -- L3 Informatique 2025-2026}]{hyperref}
+
+%% Couleurs
+\definecolor{adoptyBrown}{HTML}{5C3317}
+\definecolor{adoptyGreen}{HTML}{3A6629}
+\definecolor{placeholder}{HTML}{B05A00}
+\definecolor{okgreen}{HTML}{1B5E20}
+\definecolor{warncolor}{HTML}{BF360C}
+\definecolor{abandoncolor}{HTML}{7B1616}
+
+%% Titres
+\titleformat{\chapter}[display]
+  {\normalfont\huge\bfseries\color{adoptyBrown}}
+  {\chaptertitlename\ \thechapter}{16pt}{\Huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries\color{adoptyGreen}}{\thesection}{1em}{}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\normalfont\normalsize\bfseries\itshape}{\thesubsubsection}{1em}{}
+
+%% En-têtes
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Adopty --- Rapport de Projet L3 Informatique 2025-2026}}
+\fancyhead[R]{\small\textit{\thepage}}
+\renewcommand{\headrulewidth}{0.3pt}
+\fancypagestyle{plain}{%
+  \fancyhf{}
+  \renewcommand{\headrulewidth}{0pt}
+  \fancyfoot[C]{\small\thepage}}
+
+%% Macro todo
+\newcommand{\todo}[1]{%
+  \begin{mdframed}[backgroundcolor=gray!8,linecolor=placeholder,
+    linewidth=0.7pt,innerleftmargin=8pt,innerrightmargin=8pt,
+    innertopmargin=4pt,innerbottommargin=4pt]
+  \small\textit{\textcolor{placeholder}{[À compléter : #1]}}
+  \end{mdframed}}
+
+\newcommand{\statutOK}{\textcolor{okgreen}{\textbf{Réalisé}}}
+\newcommand{\statutPartiel}{\textcolor{warncolor}{\textbf{Partiel}}}
+\newcommand{\statutNon}{\textcolor{abandoncolor}{\textbf{Abandonné}}}
+
+%% Colonnes tableau
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\Centering\arraybackslash}p{#1}}
+
+\setlength{\LTpre}{4pt}
+\setlength{\LTpost}{4pt}
+
+% ============================================================
+\begin{document}
+
+% ============================================================
+%  PAGE DE GARDE
+% ============================================================
+\begin{titlepage}
+\centering
+\vspace*{0.8cm}
+
+{\large\textbf{Université de Béjaïa}}\\[0.15cm]
+{\normalsize Faculté des Sciences Exactes --- Département d'Informatique}\\[0.15cm]
+{\normalsize Projet de Fin de Cycle --- Licence Informatique (L3) --- Année 2025-2026}
+
+\vspace{1.2cm}
+\includegraphics[width=0.30\linewidth]{logo_adopty.png}
+\vspace{0.7cm}
+
+\vspace{0.4cm}
+\noindent\rule{0.72\linewidth}{0.8pt}
+\vspace{0.4cm}
+
+{\large\textit{Plateforme Web de Gestion d'un Centre d'Adoption Animalier}}\\[0.2cm]
+{\normalsize E-Boutique Solidaire \& Services Innovants}\\
+{\normalsize Pet-Sitting --- Promenade --- Messagerie en Temps Réel}
+
+\vspace{0.7cm}
+\noindent\rule{0.72\linewidth}{0.8pt}
+\vspace{1cm}
+
+\begin{tabular}{ll}
+\textbf{Membres du groupe :} & Taguelmimt Badis \\
+ & Tafoukt Zakaria \\
+ & Rahem Imene \\
+ & Ouaret Rayel \\
+ & Oughlis Mohand Arab \\[0.6em]
+\textbf{Encadrants :} & Mme BOUALLOUCHE-MEDJKOUNE Louiza \quad \textit{Professeur} \\
+ & M. GOUTAL Abdelhak \quad \textit{Doctorant} \\[0.6em]
+\textbf{Durée :} & 12 semaines (18 février $\rightarrow$ 14 mai 2026) \\
+\end{tabular}
+
+\vfill
+{\small Rapport final rendu le 5 mai 2026 \quad $\cdot$ \quad Soutenance le 14 mai 2026}
+\end{titlepage}
+
+% ============================================================
+%  PAGINATION FRONT MATTER
+% ============================================================
+\pagenumbering{roman}
+\setcounter{page}{1}
+
+% ============================================================
+%  RÉSUMÉ
+% ============================================================
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+\thispagestyle{plain}
+
+Ce rapport présente \textbf{Adopty}, une plateforme web \textit{full stack} développée dans le cadre du projet de fin de cycle Licence Informatique à l'Université de Béjaïa, année 2025-2026.
+
+Adopty répond à un problème concret : en Algérie, les refuges animaliers disposent d'une présence numérique quasi inexistante, les processus d'adoption demeurent entièrement manuels, et aucune plateforme ne centralise les services autour du bien-être animal. La solution proposée est une application web complète qui digitalise la gestion d'un refuge, facilite l'adoption responsable, propose des services innovants (pet-sitting et promenade), une boutique solidaire, et une messagerie en temps réel.
+
+Techniquement, Adopty repose sur \textbf{React.js} côté frontend, \textbf{Node.js + Express.js} côté backend, \textbf{MySQL} pour la base de données, \textbf{Clerk} pour l'authentification, \textbf{Socket.IO} pour la messagerie, et \textbf{Cloudinary} pour le stockage des images.
+
+\vspace{0.5em}
+\textbf{Mots-clés :} adoption animalière, plateforme web, React.js, Node.js, MySQL, Clerk, Socket.IO, Algérie.
+
+\vspace{1em}
+\noindent\rule{\linewidth}{0.4pt}
+\vspace{0.5em}
+
+\noindent\textbf{Abstract} --- This report presents \textbf{Adopty}, a full stack web platform built as part of the L3 Computer Science final project at the University of Béjaïa. Adopty digitizes animal adoption centers in Algeria through an online catalog, adoption process, solidarity e-shop, pet-sitting and walking services, and real-time messaging. Built with React.js, Node.js, MySQL, Clerk, and Socket.IO.
+
+\textbf{Keywords:} animal adoption, web platform, React.js, Node.js, MySQL, Clerk, Socket.IO, Algeria.
+
+% ============================================================
+%  TABLES
+% ============================================================
+\tableofcontents\newpage
+\listoffigures\newpage
+\listoftables\newpage
+
+% ============================================================
+%  ABRÉVIATIONS
+% ============================================================
+\chapter*{Liste des Abréviations}
+\addcontentsline{toc}{chapter}{Liste des Abréviations}
+\thispagestyle{plain}
+
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Abréviation} & \textbf{Signification} \\
+\midrule
+API     & Application Programming Interface \\
+BDD     & Base de Données \\
+CDC     & Cahier Des Charges \\
+JWT     & JSON Web Token \\
+MCD     & Modèle Conceptuel de Données \\
+MLD     & Modèle Logique de Données \\
+MVC     & Modèle-Vue-Contrôleur \\
+REST    & Representational State Transfer \\
+SGBD    & Système de Gestion de Base de Données \\
+SPA     & Single Page Application \\
+SQL     & Structured Query Language \\
+SSL     & Secure Sockets Layer \\
+UML     & Unified Modeling Language \\
+WS      & WebSocket \\
+\bottomrule
+\end{tabular}
+
+% ============================================================
+%  CORPS DU DOCUMENT
+% ============================================================
+\cleardoublepage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ============================================================
+%  INTRODUCTION GÉNÉRALE
+% ============================================================
+\chapter*{Introduction Générale}
+\addcontentsline{toc}{chapter}{Introduction Générale}
+\thispagestyle{plain}
+
+En Algérie, la très grande majorité des refuges animaliers opère sans présence numérique : les fiches animaux sont gérées sur papier, les demandes d'adoption transitent par téléphone, et les comptes de la boutique sont tenus manuellement dans des registres. Aucun site web, aucune visibilité, aucun moyen accessible pour un adoptant potentiel de localiser ces structures ou de consulter les animaux disponibles.
+
+Ce constat, documenté et récurrent, a motivé la conception d'Adopty. L'objectif est d'offrir à ces refuges une présence numérique structurée, de moderniser leurs opérations, et de créer un espace de rencontre entre adoptants, prestataires de services et gestionnaires de refuges — une plateforme qui intègre le bien-être animal et l'expérience utilisateur dans une démarche cohérente.
+
+En douze semaines, une équipe de cinq étudiants en Licence Informatique a conçu et réalisé intégralement cette plateforme : catalogue d'animaux avec fiches détaillées, processus d'adoption en ligne, e-boutique solidaire, services de garde et de promenade, messagerie en temps réel, et tableau de bord adapté à chaque profil d'utilisateur.
+
+Ce rapport retrace l'ensemble de cette démarche en trois chapitres :
+\begin{itemize}[leftmargin=2em,itemsep=3pt]
+  \item \textbf{Chapitre 1 --- Cahier des charges :} contexte, analyse de l'existant, objectifs, utilisateurs cibles, fonctionnalités et organisation de l'équipe.
+  \item \textbf{Chapitre 2 --- Conception :} architecture logicielle, diagrammes UML et modèle de données.
+  \item \textbf{Chapitre 3 --- Réalisation :} technologies utilisées et justifiées, interfaces développées, tests effectués, difficultés rencontrées et bilan des fonctionnalités.
+\end{itemize}
+
+% ============================================================
+\chapter{Cahier des Charges}
+% ============================================================
+
+\section{Introduction}
+
+Avant d'écrire la première ligne de code, il a été nécessaire de comprendre et de formaliser ce qu'Adopty doit accomplir. Ce chapitre pose les bases du projet : son contexte, l'analyse de l'existant, les utilisateurs qu'il sert, les fonctionnalités attendues, les contraintes à respecter, et l'organisation adoptée par l'équipe.
+
+\section{Présentation du Projet}
+
+\subsection*{Contexte}
+
+Dans un contexte où les refuges animaliers peinent à gérer efficacement leurs ressources et à se faire connaître, le projet \textbf{Adopty} propose une solution numérique complète. Cette plateforme web vise à moderniser et à digitaliser entièrement le fonctionnement d'un centre d'adoption animalier, en allant au-delà des fonctionnalités classiques grâce à des services novateurs centrés sur le bien-être animal.
+
+Les problèmes identifiés sont les suivants :
+\begin{itemize}[leftmargin=2em,itemsep=3pt]
+  \item \textbf{Absence de visibilité numérique.} Les refuges ne disposent ni de site web ni de page officielle.
+  \item \textbf{Gestion entièrement manuelle.} Les fiches animaux et demandes d'adoption sont gérées sur papier, sans traçabilité fiable.
+  \item \textbf{Absence de services complémentaires centralisés.} Aucune plateforme ne centralise les offres de garde ou de promenade en Algérie.
+  \item \textbf{Signalement difficile.} Aucun canal officiel ne permet de signaler rapidement un animal en danger.
+  \item \textbf{Communication fragmentée.} Les échanges entre adoptants, refuges et prestataires sont dispersés et inefficaces.
+\end{itemize}
+
+\subsection*{Objectif Général}
+
+Développer une application web \textit{full stack} complète et intuitive permettant de centraliser la gestion d'un refuge animalier, de faciliter le processus d'adoption responsable, de générer des revenus solidaires via une e-boutique, et de proposer des services innovants — pet-sitting et promenade — pour créer une communauté engagée autour du bien-être animal.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.28\linewidth]{logo_adopty.png}
+  \caption{Logo de la plateforme Adopty}
+  \label{fig:logo}
+\end{figure}
+
+\subsection{Analyse de l'Existant}
+
+Avant de concevoir Adopty, une étude comparative des plateformes existantes a été menée afin d'identifier leurs apports, leurs limites, et le positionnement différenciant de la solution proposée.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.17\linewidth}L{0.17\linewidth}L{0.32\linewidth}L{0.27\linewidth}@{}}
+\toprule
+\textbf{Plateforme} & \textbf{Contexte} & \textbf{Fonctionnalités} & \textbf{Limites} \\
+\midrule
+Petfinder
+  & États-Unis (international)
+  & Catalogue animaux, géolocalisation, filtres avancés, profils de refuges.
+  & Pas de pet-sitting ni boutique ; non adapté au contexte algérien ; pas de messagerie intégrée. \\[6pt]
+SPA France
+  & France
+  & Gestion refuges adhérents, adoption en ligne, signalement, boutique basique.
+  & Limitée à la France ; pas de messagerie temps réel ; pas de services de garde ; interface vieillissante. \\[6pt]
+Animatch
+  & Belgique / international
+  & Mise en relation adoptants-animaux, fiches détaillées.
+  & Pas de gestion de refuge ; pas de services complémentaires ; pas de boutique. \\
+\bottomrule
+\end{tabular}
+\caption{Analyse comparative des plateformes d'adoption animalière existantes}
+\label{tab:existant}
+\end{table}
+
+\textbf{Positionnement d'Adopty.} Aucune des plateformes analysées ne combine, au sein d'un même système, la gestion complète d'un refuge, l'adoption en ligne, une boutique solidaire, des services de pet-sitting et de promenade, et une messagerie en temps réel. De plus, aucune n'est adaptée au contexte algérien (langue, wilayas, contraintes de paiement local). Adopty se positionne ainsi comme une solution intégrée et localisée apportant une valeur ajoutée significative.
+
+\section{Utilisateurs Cibles}
+
+Adopty est conçue pour quatre types d'utilisateurs distincts, chacun disposant de droits et d'actions spécifiques.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.18\linewidth}L{0.37\linewidth}L{0.34\linewidth}@{}}
+\toprule
+\textbf{Rôle} & \textbf{Description} & \textbf{Actions principales} \\
+\midrule
+Visiteur / Adoptant
+  & Tout internaute (connecté ou non) souhaitant chercher un animal ou utiliser les services.
+  & Consultation, filtrage, adoption, achat, signalement, réservation, messagerie. \\[6pt]
+Prestataire
+  & Personne proposant des services de promenade ou de garde.
+  & Profil, disponibilités, réservations, avis. \\[6pt]
+Gérant de Refuge
+  & Responsable d'un refuge inscrit sur Adopty.
+  & Animaux, adoptions, boutique, signalements, statistiques locales. \\[6pt]
+Administrateur
+  & L'équipe Adopty. Supervise l'ensemble du portail.
+  & Validation refuges, statistiques globales, gestion utilisateurs. \\
+\bottomrule
+\end{tabular}
+\caption{Utilisateurs cibles de la plateforme Adopty}
+\label{tab:acteurs}
+\end{table}
+
+\section{Besoins Fonctionnels}
+
+Les fonctionnalités d'Adopty sont organisées en neuf modules.
+
+\subsection{F01 --- Authentification \& Gestion des Comptes}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Inscription et connexion sécurisée via \textbf{Clerk} (e-mail/mot de passe, OAuth Google).
+  \item Synchronisation automatique du profil utilisateur en BDD via \textbf{Inngest} à chaque création ou suppression de compte Clerk.
+  \item Gestion du profil : modification des informations personnelles, photo de profil.
+  \item Système de rôles multi-niveaux : Visiteur, Adoptant, Prestataire, Gérant de Refuge, Super-Administrateur.
+  \item Protection des routes côté React (\texttt{AdminRouteGuard}, \texttt{useRoleAccess}) et côté Express (\texttt{@clerk/express}).
+  \item Récupération de mot de passe par lien e-mail (géré par Clerk).
+\end{itemize}
+
+\subsection{F02 --- Catalogue \& Gestion des Animaux}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Fiche détaillée : espèce, race, âge, genre, poids, taille, couleur, état de santé, stérilisation, tempérament, niveau d'énergie, sociabilité, vaccinations.
+  \item Filtres avancés : espèce, race, wilaya, statut.
+  \item Statuts : \textit{Disponible} / \textit{En cours d'adoption} / \textit{Adopté}.
+  \item Upload photos via \textbf{Cloudinary} (middleware Multer).
+  \item Interface d'administration : ajout (\texttt{AnimalForm}), modification, suppression.
+\end{itemize}
+
+\subsection{F03 --- Processus d'Adoption}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Formulaire de demande en ligne (\texttt{AdoptionForm}).
+  \item Suivi du statut : \textit{En attente} / \textit{Acceptée} / \textit{Refusée}.
+  \item Validation ou refus par le gérant, avec commentaire obligatoire.
+  \item Notification de l'adoptant via l'interface (mise à jour du statut visible dans le profil).
+\end{itemize}
+
+\subsection{F04 --- Signalement d'Animaux en Danger}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Formulaire public accessible sans connexion.
+  \item Champs : type de cible (animal, utilisateur, produit), raison, description.
+  \item Tableau de bord admin pour traiter les signalements.
+  \item Statuts : \textit{Reçu} / \textit{En cours de traitement} / \textit{Résolu}.
+\end{itemize}
+
+\subsection{F05 --- E-Boutique Solidaire}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Catalogue produits : catégories, prix, stock, réductions, disponibilité.
+  \item Panier via \textbf{CartContext} (React Context API) ; wishlist persistée en BDD.
+  \item Processus de commande : Commande $\rightarrow$ SousCommandes par refuge $\rightarrow$ LignesCommande $\rightarrow$ Livraison.
+  \item Simulation de paiement intégrée.
+\end{itemize}
+
+\subsection{F06 --- Service Pet-Sitting \textnormal{[Innovation]}}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Annonces de garde (dates, animal, description) côté propriétaire.
+  \item Profils prestataires : expérience, tarif, zone, espèces acceptées, disponibilités.
+  \item Réservation en ligne, avis et notation post-prestation.
+\end{itemize}
+
+\subsection{F07 --- Service de Promenade \textnormal{[Innovation]}}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Inscription de promeneurs avec disponibilités et zones.
+  \item Même système de réservation que le pet-sitting (\texttt{TypeService} comme paramètre).
+\end{itemize}
+
+\subsection{F08 --- Messagerie en Temps Réel \textnormal{[Innovation]}}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Chat en temps réel via \textbf{Socket.IO} ; rooms par conversation.
+  \item Authentification des connexions WebSocket via l'identifiant Clerk (\texttt{userId}) transmis au handshake et vérifié en base de données.
+  \item Persistance des messages en BDD ; historique des 50 derniers chargé à la connexion.
+  \item Gestion messages lus/non lus (\texttt{MessageRead}) et participants (\texttt{ConversationParticipant}).
+\end{itemize}
+
+\subsection{F09 --- Tableau de Bord Multi-Rôles}
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item \textbf{DashboardHub} : portail central avec redirection automatique selon le rôle.
+  \item \textbf{RefugeDashboard} : animaux, adoptions, boutique, signalements, statistiques locales.
+  \item \textbf{PrestataireDashboard} : profil, disponibilités, réservations, avis.
+  \item \textbf{AdminDashboard} : vue globale, validation refuges, gestion utilisateurs.
+\end{itemize}
+
+\section{Besoins Non Fonctionnels}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.20\linewidth}L{0.72\linewidth}@{}}
+\toprule
+\textbf{Critère} & \textbf{Exigence} \\
+\midrule
+Sécurité & Clerk (sessions sécurisées, rôles), protection routes Express, JWT vérifié au handshake WebSocket, connexion BDD via SSL. \\[4pt]
+Performance & Pages $<$ 3 s. Lazy loading (React.lazy + Suspense + Vite). Annulation requêtes via \texttt{AbortController}. \\[4pt]
+Responsive & Mobile First via Tailwind CSS (mobiles, tablettes, ordinateurs). \\[4pt]
+Maintenabilité & Pattern MVC backend, pattern Mapper frontend, composants réutilisables, versioning Git. \\[4pt]
+Compatibilité & Chrome, Firefox, Edge, Safari (versions modernes). \\[4pt]
+Scalabilité & 35+ routeurs Express indépendants. Base de données cloud TiDB scalable. \\[4pt]
+Accessibilité & HTML5 sémantique, contrastes corrects, animations Framer Motion. \\
+\bottomrule
+\end{tabular}
+\caption{Besoins non fonctionnels}
+\label{tab:bnf}
+\end{table}
+
+\section{Architecture Technique Proposée}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.16\linewidth}L{0.26\linewidth}L{0.48\linewidth}@{}}
+\toprule
+\textbf{Couche} & \textbf{Technologies} & \textbf{Rôle} \\
+\midrule
+Frontend & React.js, React Router, Axios & Interface dynamique, navigation SPA, appels API. \\[3pt]
+Backend & Node.js + Express.js & API REST, logique métier, routes et middlewares. \\[3pt]
+Base de données & MySQL (TiDB Cloud, SSL) & Stockage relationnel cloud sécurisé. \\[3pt]
+Authentification & Clerk & Authentification complète, sessions et rôles. \\[3pt]
+Background jobs & Inngest & Synchronisation utilisateurs Clerk $\rightarrow$ BDD. \\[3pt]
+Temps réel & Socket.IO & Chat en temps réel, rooms par conversation. \\[3pt]
+Paiement & Simulation intégrée & Interface de paiement simulée. \\[3pt]
+Stockage médias & Cloudinary + Multer & Upload et gestion des photos. \\[3pt]
+Versioning & Git + GitHub & Historique du code et collaboration. \\
+\bottomrule
+\end{tabular}
+\caption{Stack technologique de la plateforme Adopty}
+\label{tab:stack-cdc}
+\end{table}
+
+\section{Analyse des Risques}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.34\linewidth}L{0.08\linewidth}L{0.08\linewidth}L{0.38\linewidth}@{}}
+\toprule
+\textbf{Risque} & \textbf{Prob.} & \textbf{Impact} & \textbf{Mesure} \\
+\midrule
+Surcharge fonctionnelle (9 modules) & Élevée & Élevé & Approche MoSCoW : cœur d'abord. \\[3pt]
+Gestion complexe des rôles & Moyenne & Élevé & Système de rôles conçu dès la conception. \\[3pt]
+Intégration frontend-backend & Moyenne & Moyen & Pattern Mapper, documentation endpoints. \\[3pt]
+Sécurisation WebSocket & Faible & Moyen & Vérification JWT au handshake Socket.IO. \\[3pt]
+Dépassement du délai & Moyenne & Élevé & Gantt hebdomadaire, réunions régulières. \\
+\bottomrule
+\end{tabular}
+\caption{Analyse des risques du projet Adopty}
+\label{tab:risques}
+\end{table}
+
+\section{Planning --- Diagramme de Gantt}
+
+\begin{figure}[H]
+\centering
+\small
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}p{3.5cm}*{12}{C{0.52cm}}@{}}
+\toprule
+\textbf{Phase} & \textbf{S1} & \textbf{S2} & \textbf{S3} & \textbf{S4} & \textbf{S5} & \textbf{S6} & \textbf{S7} & \textbf{S8} & \textbf{S9} & \textbf{S10} & \textbf{S11} & \textbf{S12} \\
+\midrule
+Pitch \& CDC          & \cellcolor{gray!50} & \cellcolor{gray!50} & & & & & & & & & & \\
+Modélisation UML      & & & \cellcolor{gray!35} & \cellcolor{gray!35} & & & & & & & & \\
+Maquettage Figma      & & & \cellcolor{gray!35} & \cellcolor{gray!35} & & & & & & & & \\
+Frontend React        & & & & & \cellcolor{gray!50} & \cellcolor{gray!50} & \cellcolor{gray!50} & & & & & \\
+Backend Express       & & & & & \cellcolor{gray!50} & \cellcolor{gray!50} & \cellcolor{gray!50} & & & & & \\
+Adoption \& Signal.   & & & & & & & \cellcolor{gray!50} & \cellcolor{gray!50} & & & & \\
+Boutique \& Paiement  & & & & & & & & \cellcolor{gray!50} & \cellcolor{gray!50} & & & \\
+Services \& Chat      & & & & & & & & & \cellcolor{gray!50} & \cellcolor{gray!50} & & \\
+Dashboard \& Stats    & & & & & & & & & & \cellcolor{gray!35} & \cellcolor{gray!35} & \\
+Tests \& Corrections  & & & & & & & & & & & \cellcolor{gray!50} & \cellcolor{gray!50} \\
+Rapport final         & & & & & & & & & & & \cellcolor{gray!80} & \cellcolor{gray!80} \\
+Soutenance            & & & & & & & & & & & & \cellcolor{black} \\
+\bottomrule
+\end{tabular}
+\caption{Diagramme de Gantt --- Adopty (12 semaines)}
+\label{fig:gantt}
+\end{figure}
+
+\section{Organisation de l'Équipe}
+
+\subsection*{Mode de fonctionnement}
+
+L'équipe a privilégié la collaboration en présentiel. Deux membres ont assuré l'essentiel du développement backend (Express, base de données, logique métier), et trois membres ont piloté le frontend (React, composants, interfaces). La réalité du travail est transversale : l'ensemble de l'équipe a contribué à l'intégration, aux discussions d'architecture et à la résolution de problèmes. Git a été utilisé pour le versioning, tandis que la coordination s'effectuait en réunion quotidienne.
+
+\section{Conclusion}
+
+Ce premier chapitre a établi le cadre complet du projet Adopty : un problème documenté, une analyse de l'existant démontrant la valeur ajoutée de la solution, une réponse structurée en neuf modules, des contraintes clairement identifiées et une organisation d'équipe favorisant la collaboration.
+
+% ============================================================
+\chapter{Conception}
+% ============================================================
+
+\section{Introduction}
+
+La phase de conception est indispensable avant toute implémentation : elle permet d'identifier les erreurs de modélisation sur papier et de fournir à l'équipe une référence commune pour le développement. Ce chapitre présente l'architecture logicielle d'Adopty, les diagrammes UML, le diagramme de classes et le modèle relationnel de la base de données.
+
+\section{Architecture Logicielle}
+
+\subsection{Vue d'ensemble : Architecture 3-Tier}
+
+Adopty suit une architecture classique à trois couches :
+\begin{itemize}[leftmargin=2em,itemsep=3pt]
+  \item \textbf{Couche Présentation (Frontend)} : application React (SPA) communiquant avec le backend via HTTP REST (Axios) ; pages en lazy loading.
+  \item \textbf{Couche Métier (Backend)} : API REST Express.js avec plus de 35 routeurs indépendants ; serveur WebSocket Socket.IO intégré au même processus HTTP.
+  \item \textbf{Couche Données} : base de données MySQL hébergée sur TiDB Cloud avec connexion SSL obligatoire.
+\end{itemize}
+
+Trois services externes enrichissent cette architecture : \textbf{Clerk} (authentification), \textbf{Inngest} (background jobs), \textbf{Cloudinary} (stockage images).
+
+\subsection{Organisation du Code}
+
+\textbf{Côté backend} (pattern MVC) : \texttt{src/modeles/}, \texttt{src/database/}, \texttt{src/controlleurs/}, \texttt{src/routes/}.
+
+\textbf{Côté frontend} (organisation par fonctionnalité) : \texttt{src/pages/}, \texttt{src/components/}, \texttt{src/mappers/}, \texttt{src/hooks/}, \texttt{src/context/}, \texttt{src/services/}.
+
+\section{Diagramme des Cas d'Utilisation}
+
+Le diagramme suivant présente l'ensemble des fonctionnalités d'Adopty et les interactions entre les quatre acteurs du système. On y distingue les actions accessibles sans authentification (consultation du catalogue, signalement) de celles nécessitant une connexion, ainsi que les périmètres distincts de chaque rôle.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{diagramme_uc.png}
+  \caption{Diagramme des Cas d'Utilisation --- Adopty}
+  \label{fig:uc}
+\end{figure}
+
+\FloatBarrier
+
+\section{Diagrammes de Séquence}
+
+Les diagrammes suivants modélisent les échanges entre acteurs et composants du système pour les principaux cas d'utilisation d'Adopty, en distinguant scénario nominal et scénarios alternatifs (erreurs, cas limites). Chaque diagramme correspond à un module fonctionnel du cahier des charges.
+
+\subsection{Séquence --- Authentification}
+
+Le diagramme ci-dessous illustre le flux d'authentification. Il distingue le scénario nominal (connexion réussie) de deux scénarios alternatifs (identifiants incorrects, mot de passe oublié).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{Seq - Authentification.jpg}
+  \caption{Diagramme de séquence --- Authentification}
+  \label{fig:seq-auth}
+\end{figure}
+
+L'authentification est déléguée intégralement à Clerk, service tiers spécialisé. Ce choix architectural est délibéré : externaliser la gestion des sessions permet de bénéficier de mécanismes de sécurité éprouvés (chiffrement, protection CSRF, gestion des tokens) sans avoir à les réimplémenter. L'utilisateur saisit ses identifiants~; l'interface les transmet à Clerk qui vérifie le compte en base de données. En cas de succès, une session sécurisée est établie et l'identifiant Clerk est attaché à chaque requête HTTP via le middleware \texttt{@clerk/express}. Les scénarios alternatifs couvrent les identifiants incorrects (refus avec message d'erreur précis) et la récupération de mot de passe (envoi d'un lien temporaire par e-mail géré par Clerk).
+
+\subsection{Séquence --- Processus d'Adoption}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{Seq - Adoption.jpg}
+  \caption{Diagramme de séquence --- Processus d'Adoption}
+  \label{fig:seq-adoption}
+\end{figure}
+
+Le scénario nominal illustre le cycle complet d'une demande d'adoption, de la soumission du formulaire jusqu'à la décision du refuge. L'adoptant soumet le formulaire \texttt{AdoptionForm}~; la demande est persistée en BDD avec le statut \textit{En attente}, visible immédiatement dans le tableau de bord du refuge concerné. Ce dernier rend sa décision (acceptation ou refus avec commentaire obligatoire) depuis son tableau de bord. L'adoptant peut suivre l'évolution du statut en temps réel depuis son profil. Ce flux à double sens garantit la traçabilité complète du processus et remplace efficacement les échanges manuels identifiés comme problématiques dans l'analyse de l'existant. Le scénario alternatif couvre le cas d'un refus avec obligation de motiver la décision, protégeant ainsi les droits de l'adoptant.
+
+\subsection{Séquence --- Signalement d'Animal}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{Seq - Signalement.jpg}
+  \caption{Diagramme de séquence --- Signalement d'Animal en Danger}
+  \label{fig:seq-signalement}
+\end{figure}
+
+Le visiteur remplit le formulaire de signalement (lieu, description, photo optionnelle) sans connexion préalable. Le système enregistre le signalement avec le statut \textit{Reçu}, immédiatement visible dans le dashboard administrateur. Ces derniers traitent le signalement depuis l'interface d'administration et mettent à jour son statut (\textit{En cours de traitement}, \textit{Résolu}). Le signaleur peut consulter l'évolution depuis son profil s'il est connecté.
+
+\subsection{Séquence --- E-Boutique}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{Seq - Boutique.jpg}
+  \caption{Diagramme de séquence --- E-Boutique (Ajout panier et commande)}
+  \label{fig:seq-boutique}
+\end{figure}
+
+L'utilisateur ajoute des produits au panier (géré via \texttt{CartContext}), puis valide sa commande. Le système vérifie la disponibilité du stock, décompose la commande en sous-commandes par refuge, met à jour les stocks et enregistre la commande en base de données. L'utilisateur peut consulter l'état de sa commande depuis son profil. Le scénario alternatif traite les produits indisponibles lors de la validation.
+
+\subsection{Séquence --- Services (Pet-Sitting \& Promenade)}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{Seq - Services.jpg}
+  \caption{Diagramme de séquence --- Réservation de Service}
+  \label{fig:seq-services}
+\end{figure}
+
+Le propriétaire publie une annonce~; les prestataires disponibles peuvent la consulter depuis leur tableau de bord et soumettre une candidature. Lorsqu'un prestataire accepte une demande, le statut de la réservation est mis à jour et le propriétaire peut en prendre connaissance dans son profil. Le flux est identique pour le pet-sitting et la promenade, le type de service étant passé comme paramètre (\texttt{TypeService}).
+
+\subsection{Séquence --- Administration}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\linewidth]{Seq - Admin.jpg}
+  \caption{Diagramme de séquence --- Actions d'Administration (Refuge)}
+  \label{fig:seq-admin}
+\end{figure}
+
+Le diagramme de séquence Administration illustre les interactions entre le Super-Administrateur et les différents composants du système. Il décrit deux flux principaux : la consultation des statistiques globales et la gestion des comptes. Les statistiques sont récupérées par des requêtes SQL directes sur la base de données, garantissant des données en temps réel. Lorsque l'administrateur valide un refuge, le système met à jour le statut en BDD~; le gérant peut constater ce changement lors de sa prochaine connexion. Ce mécanisme d'approbation est le contrôle qualité principal de la plateforme : seuls les refuges vérifiés apparaissent dans le catalogue public. Les actions sur les comptes utilisateurs (bannissement, modification de rôle) sont enregistrées et prennent effet immédiatement.
+
+\section{Diagramme de Classes}
+
+Le diagramme de classes modélise l'ensemble des entités du système Adopty et leurs relations. Il a guidé directement la création de la base de données (\textbf{42 tables}).
+
+Le diagramme de classes d'Adopty modélise les 42 tables de la base de données, organisées autour de quatre domaines fonctionnels : la gestion des utilisateurs et des rôles, la gestion des animaux et des refuges, le commerce (boutique, commandes, livraisons), et les services (réservations, messagerie, signalements). Les relations suivantes structurent le modèle :
+
+\begin{itemize}[leftmargin=2em,itemsep=3pt]
+  \item \textbf{Utilisateur $\leftrightarrow$ Rôle} : association N--N via \texttt{RoleUtilisateur}. Un utilisateur peut cumuler plusieurs rôles (Adoptant, Refuge, Prestataire, Admin).
+  \item \textbf{Utilisateur $\leftrightarrow$ Refuge} : association N--N via \texttt{RefugeUtilisateur}. Plusieurs gestionnaires peuvent administrer un même refuge.
+  \item \textbf{Refuge $\rightarrow$ Animal} : association N--N via \texttt{Possession} (un animal peut être transféré entre refuges). Chaque \texttt{Possession} référence l'utilisateur responsable.
+  \item \textbf{Animal $\rightarrow$ Race} : association N--1. La \texttt{Race} porte les données encyclopédiques (origine, longévité, poids moyen).
+  \item \textbf{Animal $\leftrightarrow$ Vaccin} : association N--N via \texttt{VaccinAnimal}. Historique vaccinal lié à chaque animal.
+  \item \textbf{Animal $\rightarrow$ Statut} : association N--1. Contrôle l'état (\textit{Disponible}, \textit{En cours d'adoption}, \textit{Adopté}).
+  \item \textbf{Utilisateur $\rightarrow$ DemandeAdoption $\leftarrow$ Animal} : entité de liaison portant le statut, la date et le commentaire de décision du refuge.
+  \item \textbf{Refuge $\rightarrow$ Produit} : composition 1--N. Les produits appartiennent au refuge.
+  \item \textbf{Utilisateur $\rightarrow$ Commande $\rightarrow$ SousCommande $\rightarrow$ LigneCommande} : décomposition hiérarchique de la commande par refuge. Chaque \texttt{SousCommande} gère sa propre \texttt{Livraison}.
+  \item \textbf{Utilisateur $\rightarrow$ ProfilPrestataire $\rightarrow$ Disponibilité} : profil prestataire avec créneaux (récurrence optionnelle), lié à un \texttt{TypeService}.
+  \item \textbf{Utilisateur $\rightarrow$ Annonce $\leftarrow$ ProfilPrestataire} : la \texttt{Réservation} résulte de la mise en relation d'une annonce et d'un profil prestataire.
+  \item \textbf{Conversation $\leftrightarrow$ Utilisateur} : N--N via \texttt{ConversationParticipant}. Les \texttt{Messages} sont liés à la conversation~; leur lecture est tracée via \texttt{MessageRead}.
+  \item \textbf{Signalement $\rightarrow$ Cible} : relation polymorphe. Un signalement peut viser un animal, un utilisateur ou un produit (\texttt{TypeCible} + \texttt{IdCible}).
+\end{itemize}
+
+Cette architecture orientée objet garantit l'intégrité référentielle et minimise la redondance des données. Chaque entité est mappée sur une table SQL, et les associations N--N sont réalisées par des tables de liaison dédiées.
+
+\subsection{Description des entités principales}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.18\linewidth}L{0.74\linewidth}@{}}
+\toprule
+\textbf{Entité} & \textbf{Description} \\
+\midrule
+Utilisateur & Entité centrale. Identifiant Clerk, coordonnées, wilaya, photo. Rôle encodé dans \texttt{publicMetadata.role}. \\[3pt]
+Animal & Fiche complète : nom, âge, genre, poids, taille, couleur, santé, tempérament, énergie, sociabilité. Lié à Race, Vaccins, Photos. \\[3pt]
+Race & Données de race : origine, longévité, poids moyen, intelligence. Enrichit la fiche animal. \\[3pt]
+Refuge & Centre d'adoption. Associé à des Utilisateurs (RefugeUtilisateur), des Animaux (Possession) et des Produits. \\[3pt]
+Produit & Article de la boutique lié à un refuge. Gestion du stock, réductions, disponibilité. \\[3pt]
+Commande & Achat boutique. Décomposée en SousCommandes par refuge, LignesCommande et Livraison. \\[3pt]
+ProfilPrestataire & Profil : tarif, zone, expérience, Disponibilités, Spécifications (espèces acceptées). \\[3pt]
+Réservation & Liaison propriétaire-prestataire. Dates, statut, prix final, notes. \\[3pt]
+Conversation & Fil de chat. Messages et ConversationParticipants. Lecture tracée via MessageRead. \\[3pt]
+Signalement & Signalement public. Peut viser un animal, un utilisateur ou un produit. Suivi par statut. \\
+\bottomrule
+\end{tabular}
+\caption{Description des entités principales d'Adopty}
+\label{tab:entites}
+\end{table}
+
+\section{Dictionnaire de Données}
+
+\begin{small}
+\begin{longtable}{|>{\bfseries}p{0.15\linewidth}|p{0.18\linewidth}|p{0.14\linewidth}|p{0.43\linewidth}|}
+\hline
+\rowcolor{adoptyBrown!15}
+\textbf{Entité} & \textbf{Attribut} & \textbf{Type} & \textbf{Description} \\ \hline
+\endhead
+
+Utilisateur & Id & INT (PK) & Identifiant unique auto-incrémenté \\ \cline{2-4}
+ & clerkId & VARCHAR(100) & Identifiant Clerk (unique) \\ \cline{2-4}
+ & Nom / Prénom & VARCHAR(50) & Identité civile \\ \cline{2-4}
+ & AddresseEmail & VARCHAR(100) & Adresse e-mail (unique) \\ \cline{2-4}
+ & Wilaya & VARCHAR(50) & Wilaya de résidence \\ \cline{2-4}
+ & Photo & VARCHAR(255) & URL photo Cloudinary \\ \hline
+
+Animal & Id & INT (PK) & Identifiant unique \\ \cline{2-4}
+ & Nom & VARCHAR(100) & Nom de l'animal \\ \cline{2-4}
+ & Age & INT & Âge en mois \\ \cline{2-4}
+ & Genre & VARCHAR(10) & Mâle / Femelle \\ \cline{2-4}
+ & Poids & FLOAT & Poids en kg \\ \cline{2-4}
+ & EtatSante & TEXT & Description de l'état de santé \\ \cline{2-4}
+ & NiveauEnergetique & VARCHAR(50) & Faible / Moyen / Élevé \\ \cline{2-4}
+ & Statut & INT (FK) & Référence vers table Statut \\ \cline{2-4}
+ & Race & INT (FK) & Référence vers table Race \\ \hline
+
+Race & Id & INT (PK) & Identifiant unique \\ \cline{2-4}
+ & Nom & VARCHAR(100) & Nom de la race \\ \cline{2-4}
+ & Origine & VARCHAR(100) & Pays ou région d'origine \\ \cline{2-4}
+ & LongeviteMoyenne & INT & Espérance de vie (années) \\ \cline{2-4}
+ & PoidsMoyen & FLOAT & Poids moyen adulte (kg) \\ \cline{2-4}
+ & Espece & INT (FK) & Référence vers table Espèce \\ \hline
+
+Refuge & Id & INT (PK) & Identifiant unique \\ \cline{2-4}
+ & Nom & VARCHAR(150) & Nom du refuge \\ \cline{2-4}
+ & Adresse & VARCHAR(255) & Adresse physique \\ \cline{2-4}
+ & Wilaya & VARCHAR(50) & Wilaya d'implantation \\ \cline{2-4}
+ & Date\_Inscription & DATETIME & Date d'inscription sur Adopty \\ \hline
+
+Produit & Id & INT (PK) & Identifiant unique \\ \cline{2-4}
+ & Nom & VARCHAR(150) & Nom du produit \\ \cline{2-4}
+ & Prix & FLOAT & Prix en dinars algériens \\ \cline{2-4}
+ & Stock & INT & Quantité disponible \\ \cline{2-4}
+ & Reduction & FLOAT & Pourcentage de réduction \\ \cline{2-4}
+ & Disponibilite & BOOLEAN & Produit actif ou suspendu \\ \cline{2-4}
+ & IdRefuge & INT (FK) & Refuge propriétaire \\ \hline
+
+Commande & Id & INT (PK) & Identifiant unique \\ \cline{2-4}
+ & Statut & INT (FK) & Référence vers table Statut \\ \cline{2-4}
+ & DateCreate & DATETIME & Horodatage de création \\ \cline{2-4}
+ & IdUtilisateur & INT (FK) & Acheteur \\ \hline
+
+Réservation & Id & INT (PK) & Identifiant unique \\ \cline{2-4}
+ & IdUtilisateur & INT (FK) & Propriétaire de l'animal \\ \cline{2-4}
+ & IdProfil & INT (FK) & Profil prestataire sollicité \\ \cline{2-4}
+ & DateDebut & DATETIME & Début de la prestation \\ \cline{2-4}
+ & DateFin & DATETIME & Fin de la prestation \\ \cline{2-4}
+ & PrixFinal & FLOAT & Montant total facturé \\ \hline
+
+Message & Id & INT (PK) & Identifiant unique \\ \cline{2-4}
+ & IdConversation & INT (FK) & Conversation parente \\ \cline{2-4}
+ & SenderId & INT (FK) & Expéditeur \\ \cline{2-4}
+ & Contenu & TEXT & Corps du message \\ \cline{2-4}
+ & CreatedAt & DATETIME & Horodatage d'envoi \\ \hline
+
+Signalement & Id & INT (PK) & Identifiant unique \\ \cline{2-4}
+ & TypeCible & VARCHAR(50) & Type de l'objet signalé \\ \cline{2-4}
+ & Raison & TEXT & Motif du signalement \\ \cline{2-4}
+ & DateSignalement & DATETIME & Date du signalement \\ \cline{2-4}
+ & IdUtilisateur & INT (FK) & Signaleur (optionnel) \\ \hline
+
+ProfilPrestataire & Id & INT (PK) & Identifiant unique \\ \cline{2-4}
+ & IdUtilisateur & INT (FK) & Utilisateur prestataire \\ \cline{2-4}
+ & TypeService & INT (FK) & Référence vers TypeService \\ \cline{2-4}
+ & TarifHoraire & FLOAT & Tarif en dinars/heure \\ \cline{2-4}
+ & ZoneIntervention & VARCHAR(100) & Zone géographique \\ \cline{2-4}
+ & NoteMoyenne & FLOAT & Note moyenne sur 5 \\ \hline
+
+\caption{Dictionnaire de données --- Adopty (10 entités principales)}
+\label{tab:dico}
+\end{longtable}
+\end{small}
+
+\section{Modèle Relationnel}
+\label{sec:modele-rel}
+
+La base de données relationnelle d'Adopty compte \textbf{42 tables}, toutes modélisées et implémentées. Les \underline{clés primaires} sont soulignées, les \textit{clés étrangères} sont en italique.
+
+{\small
+\begin{itemize}[leftmargin=1.5em,itemsep=2pt]
+  \item \textbf{Utilisateur} (\underline{Id}, clerkId, Nom, Prénom, AddresseEmail, Wilaya, Photo, DateCreation)
+  \item \textbf{Note} (\underline{Id}, Nom, Description)
+  \item \textbf{RoleUtilisateur} (\underline{\textit{IdRole}}, \underline{\textit{IdUtilisateur}})
+  \item \textbf{Espece} (\underline{Id}, Nom, Description)
+  \item \textbf{Race} (\underline{Id}, Nom, Description, Origine, LongeviteMoyenne, TailleMoyenne, PoidsMoyen, Couleurs, Intelligence, \textit{Espece})
+  \item \textbf{Vaccin} (\underline{Id}, Nom, Description)
+  \item \textbf{Statut} (\underline{Id}, Statut)
+  \item \textbf{Animal} (\underline{Id}, Nom, Age, Genre, Poids, Taille, Couleur, EtatSante, Sterilise, Temperament, NiveauEnergetique, SociableEnfant, SociableAnimaux, \textit{Statut}, \textit{Race})
+  \item \textbf{VaccinAnimal} (\underline{\textit{IdVaccin}}, \underline{\textit{IdAnimal}})
+  \item \textbf{Photo} (\underline{Id}, \textit{IdUtilisateur}, \textit{IdRefuge}, \textit{IdAnimal}, TypeService, Url)
+  \item \textbf{Refuge} (\underline{Id}, Nom, Description, Adresse, AddressGPS, Wilaya, Telephone, Date\_Inscription)
+  \item \textbf{RefugeUtilisateur} (\underline{\textit{IdRefuge}}, \underline{\textit{IdUtilisateur}})
+  \item \textbf{Possession} (\underline{\textit{IdAnimal}}, \underline{\textit{IdRefuge}}, \textit{IdUtilisateur})
+  \item \textbf{Produit} (\underline{Id}, Nom, Prix, Stock, Categorie, Reduction, Disponibilite, \textit{IdRefuge})
+  \item \textbf{Panier} (\underline{Id}, \textit{IdUtilisateur}) \quad \textbf{LignePanier} (\underline{Id}, Quantite, \textit{IdPanier}, \textit{IdProduit})
+  \item \textbf{WishList} (\underline{Id}, \textit{IdUtilisateur}) \quad \textbf{LigneWishList} (\underline{Id}, Statut, \textit{IdWishlist}, \textit{IdProduit})
+  \item \textbf{Commande} (\underline{Id}, Statut, DateCreate, \textit{IdUtilisateur})
+  \item \textbf{SousCommande} (\underline{Id}, Total\_prix, DateCreate, \textit{IdCommande}, \textit{IdRefuge})
+  \item \textbf{LigneCommande} (\underline{Id}, Quantite, \textit{IdSousCommande}, \textit{IdProduit})
+  \item \textbf{Livraison} (\underline{Id}, Adresse, Statut, TrackingNumber, \textit{IdSousCommande})
+  \item \textbf{Avis} (\underline{Id}, Note, Commentaire, \textit{IdUtilisateur}, \textit{IdProduit}, \textit{IdSousCommande})
+  \item \textbf{TypeService} (\underline{Id}, Type)
+  \item \textbf{ProfilPrestataire} (\underline{Id}, Experience, TarifHoraire, ZoneIntervention, Bio, NoteMoyenne, Statut, \textit{IdUtilisateur}, \textit{TypeService})
+  \item \textbf{Specification} (\underline{Id}, \textit{IdProfil}, \textit{IdEspece}) \quad \textbf{Disponibilite} (\underline{Id}, DateDebut, DateFin, Recurrence, \textit{IdProfil})
+  \item \textbf{Annonce} (\underline{Id}, TypeService, DateDebut, DateFin, Statut, Notes, \textit{IdUtilisateur}, \textit{IdAnimal})
+  \item \textbf{Reservation} (\underline{Id}, DateDebut, DateFin, Statut, PrixFinal, Notes, \textit{IdUtilisateur}, \textit{IdProfil}, \textit{IdAnnonce})
+  \item \textbf{AvisService} (\underline{Id}, Note, TypeAvis, \textit{IdReservation}, \textit{IdUtilisateur})
+  \item \textbf{Signalement} (\underline{Id}, TypeCible, \textit{IdCible}, Statut, Raison, DateSignalement, \textit{IdUtilisateur})
+  \item \textbf{Conversation} (\underline{Id}, Type, CreatedAt, \textit{CreatedBy})
+  \item \textbf{ConversationParticipant} (\underline{Id}, Role, Statut, JoinedAt, \textit{IdConversation}, \textit{IdUtilisateur})
+  \item \textbf{Message} (\underline{Id}, Contenu, CreatedAt, \textit{IdConversation}, \textit{SenderId})
+  \item \textbf{MessageRead} (\underline{Id}, ReadAt, \textit{IdMessage}, \textit{IdUtilisateur})
+\end{itemize}
+}
+
+\section{Conclusion}
+
+La conception d'Adopty repose sur un modèle de données de 42 tables reflétant fidèlement la complexité du domaine. Les diagrammes UML produits ont servi de référence tout au long du développement, et le respect du pattern MVC côté backend a permis de maintenir un code lisible et maintenable.
+
+% ============================================================
+\chapter{Réalisation}
+% ============================================================
+
+\section{Introduction}
+
+Ce chapitre présente la réalisation concrète d'Adopty : les outils et technologies utilisés avec leurs justifications, les interfaces développées, les tests effectués, les difficultés rencontrées et un bilan des fonctionnalités livrées.
+
+\section{Environnement de Développement}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.15\linewidth]{vscode.png}\hspace{0.8cm}
+  \includegraphics[width=0.15\linewidth]{github.png}\hspace{0.8cm}
+  \includegraphics[width=0.28\linewidth]{fgma.png}
+  \caption{Outils de développement : VS Code, GitHub, Figma}
+  \label{fig:outils-dev}
+\end{figure}
+
+\begin{itemize}[leftmargin=2em,itemsep=3pt]
+  \item \textbf{Visual Studio Code} : éditeur principal, avec ESLint, Prettier, GitLens et Thunder Client pour tester les endpoints API.
+  \item \textbf{GitHub} : hébergement Git avec branches thématiques par fonctionnalité, fusionnées après revue collective.
+  \item \textbf{Figma} : maquettage UI/UX de toutes les pages, validé collectivement avant implémentation.
+\end{itemize}
+
+\section{Technologies Utilisées}
+
+\subsection{React.js + Vite}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=1\linewidth]{react.png}
+  \caption{React.js + Vite --- Frontend SPA}
+  \label{fig:react}
+\end{figure}
+
+\textbf{React.js} est la bibliothèque JavaScript retenue pour l'interface utilisateur. \textbf{Vite} remplace Create React App pour des temps de compilation nettement plus rapides. \textbf{React Router v7} gère la navigation SPA, \textbf{Axios} effectue les appels HTTP, et les pages sont en lazy loading via \texttt{React.lazy + Suspense}. \textbf{Framer Motion} gère les animations.
+
+\textbf{Pourquoi React plutôt que Vue.js ou Angular ?} React a été privilégié pour sa maturité, l'abondance de sa documentation et la maîtrise préalable de l'équipe. Contrairement à Angular (plus verbeux), React offre une courbe d'apprentissage adaptée au cadre de ce projet. L'écosystème React Router v7 et l'intégration Clerk garantissaient par ailleurs les meilleures compatibilités avec la stack choisie.
+
+\subsection{Node.js + Express.js}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.38\linewidth]{nodejs.png}
+  \caption{Node.js + Express.js --- API REST}
+  \label{fig:nodejs}
+\end{figure}
+
+\textbf{Node.js} est l'environnement d'exécution côté serveur. \textbf{Express v5} structure l'API en plus de 35 routeurs indépendants par domaine métier. Le serveur \textbf{Socket.IO} est intégré au même processus HTTP.
+
+\textbf{Pourquoi Node.js plutôt que Django ou Spring Boot ?} L'utilisation de JavaScript côté backend permet de partager les mêmes structures de données entre frontend et backend, réduisant les frictions de synchronisation. Express.js s'intègre nativement avec Socket.IO, avantage déterminant pour la messagerie temps réel. Django ou Spring Boot auraient nécessité un second langage et des bibliothèques WebSocket distinctes.
+
+\subsection{MySQL --- TiDB Cloud}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.55\linewidth]{tidb.png}
+  \caption{MySQL hébergé sur TiDB Cloud}
+  \label{fig:tidb}
+\end{figure}
+
+La base de données \textbf{MySQL} est hébergée sur \textbf{TiDB Cloud}, solution cloud compatible MySQL avec connexion SSL obligatoire, disponible gratuitement pour le développement.
+
+\textbf{Pourquoi TiDB Cloud plutôt que MySQL local ou Supabase ?} TiDB Cloud permet à tous les membres de l'équipe de partager une base de données commune sans infrastructure dédiée. Supabase impose PostgreSQL, dont la syntaxe diffère de MySQL que l'équipe maîtrisait déjà. Un serveur local aurait créé des problèmes de synchronisation entre développeurs.
+
+\subsection{Clerk}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\linewidth]{clerk.png}
+  \caption{Clerk --- Authentification}
+  \label{fig:clerk}
+\end{figure}
+
+\textbf{Clerk} gère l'intégralité du cycle d'authentification : inscription, connexion (e-mail ou OAuth Google), sessions JWT et rôles via \texttt{publicMetadata.role}.
+
+\textbf{Pourquoi Clerk plutôt qu'une authentification JWT maison ou Auth0 ?} Clerk propose une solution clé en main intégrant nativement la gestion des sessions, la récupération de mot de passe, les webhooks de synchronisation et les métadonnées de rôles — fonctionnalités qui auraient nécessité plusieurs semaines de développement manuel. Par rapport à Auth0, Clerk offre un modèle tarifaire plus accessible et une intégration React plus directe. La contrepartie est une dépendance à un service tiers : pour une version de production, il conviendrait d'évaluer des mécanismes de fallback.
+
+\subsection{Inngest}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\linewidth]{inngest.png}
+  \caption{Inngest --- Background Jobs}
+  \label{fig:inngest}
+\end{figure}
+
+\textbf{Inngest} est une plateforme d'orchestration de tâches asynchrones (\textit{background jobs}) s'exécutant en dehors du cycle requête-réponse HTTP. Dans Adopty, il joue un rôle d'intermédiaire critique entre Clerk et la base de données MySQL.
+
+Le problème résolu est le suivant : Clerk gère les utilisateurs dans son propre système, hors de notre BDD. Or, Adopty nécessite un enregistrement local pour chaque utilisateur (adoptions, commandes, rôle, wilaya, etc.). Inngest écoute les webhooks Clerk et déclenche des fonctions Node.js en réponse :
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item À l'inscription (\texttt{clerk/user.created}) : création automatique du profil en BDD.
+  \item À la suppression (\texttt{clerk/user.deleted}) : suppression des données via \texttt{delete-user-from-db}.
+\end{itemize}
+
+\textbf{Pourquoi Inngest plutôt qu'un webhook Express direct ?} Un endpoint webhook classique échoue silencieusement en cas de surcharge. Inngest apporte la résilience (retry automatique), la traçabilité (tableau de bord des exécutions) et l'isolation (les jobs ne bloquent pas le thread Express principal).
+
+\subsection{Socket.IO}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\linewidth]{socket.png}
+  \caption{Socket.IO --- Messagerie temps réel}
+  \label{fig:socket}
+\end{figure}
+
+\textbf{Socket.IO} implémente le chat en temps réel. Chaque conversation est une room isolée. L'authentification est vérifiée au handshake côté serveur avant d'autoriser la connexion. Les messages sont persistés en BDD et les 50 derniers sont chargés à la connexion.
+
+\textbf{Pourquoi Socket.IO plutôt que les WebSockets natifs ?} L'API \texttt{ws} native ne gère pas la reconnexion automatique, les rooms ni le fallback pour les proxies bloquant les WebSockets. Socket.IO encapsule ces mécanismes et fournit une abstraction de haut niveau directement utilisable côté React. Pour un projet où la messagerie est une fonctionnalité parmi neuf modules, ce compromis entre rapidité de développement et robustesse est justifié.
+
+\textbf{Sécurisation WebSocket :} lors de la connexion, le client envoie son identifiant Clerk (\texttt{userId}) dans les paramètres d'authentification Socket.IO. Le middleware \texttt{socketAuth} côté serveur vérifie l'existence de cet utilisateur en base de données avant d'autoriser l'établissement de la connexion. Toute connexion sans identifiant valide est rejetée.
+
+\subsection{Simulation de Paiement}
+
+La plateforme intègre une interface de paiement simulée reproduisant fidèlement le parcours complet : choix du moyen de paiement, saisie des informations, confirmation et mise à jour de la commande. Les prérequis d'une vraie passerelle (compte marchand, IBAN algérien, vérification d'identité) dépassaient le cadre de ce projet. Pour un déploiement en production, l'intégration de \textbf{BaridiMob} ou \textbf{CIB} constituerait l'étape suivante.
+
+\subsection{Cloudinary}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.3\linewidth]{cloudinaryy.png}
+  \caption{Cloudinary --- Stockage images}
+  \label{fig:cloudinary}
+\end{figure}
+
+\textbf{Cloudinary} gère le stockage cloud de toutes les images. \textbf{Multer} intercepte les fichiers uploadés côté Express avant de les envoyer vers Cloudinary.
+
+\textbf{Pourquoi Cloudinary plutôt qu'un stockage local ou Amazon S3 ?} Cloudinary offre un plan gratuit généreux, des transformations d'images à la volée (redimensionnement, optimisation WebP) et une CDN mondiale. Amazon S3 aurait nécessité une configuration IAM complexe et des coûts dès les premiers Go. Le stockage local est incompatible avec un déploiement sur serveur stateless.
+
+\subsection{Tailwind CSS}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.4\linewidth]{tailwindcss.png}
+  \caption{Tailwind CSS v3}
+  \label{fig:tailwind}
+\end{figure}
+
+\textbf{Tailwind CSS v3} est le framework CSS utilitaire utilisé pour l'ensemble de l'interface, avec une approche Mobile First. Son système de classes utilitaires permet une itération rapide sans quitter le JSX, et sa purge automatique garantit un bundle CSS minimal en production.
+
+\textbf{Pourquoi Tailwind plutôt que Bootstrap ou du CSS pur ?} Bootstrap impose une charte visuelle reconnaissable qui rend difficile la personnalisation du design. Le CSS pur nécessite une organisation rigoureuse des feuilles de styles et génère des frictions de maintenance dans un projet multi-développeurs. Tailwind CSS résout ces deux problèmes : chaque classe est atomique et limitée au composant, le code CSS inutilisé est automatiquement supprimé par le compilateur, et l'approche \textit{utility-first} s'est révélée particulièrement adaptée au développement itératif de cette plateforme. La cohérence visuelle est garantie par le fichier de configuration centralisé (\texttt{tailwind.config.js}) qui définit la palette de couleurs, les polices et les espacements de la charte Adopty.
+
+\section{Présentation des Interfaces}
+
+\subsection{Interfaces Communes}
+
+\subsubsection{Authentification}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{authentification.png}
+  \caption{Interface Authentification}
+  \label{fig:ui-auth}
+\end{figure}
+
+L'interface d'authentification répond au besoin F01. Elle propose connexion et inscription depuis la même page via deux onglets. Le formulaire d'inscription se déroule en trois étapes guidées afin de réduire la friction cognitive. Le composant est rendu par Clerk et intégré via le hook \texttt{useClerk}, garantissant que la gestion des sessions et la validation des champs respectent les meilleures pratiques de sécurité sans développement personnalisé.
+
+\subsubsection{Accueil}
+
+La page d'accueil constitue le point d'entrée de la plateforme. Un carrousel \textit{hero} illustre l'aspect humain de l'adoption, tandis que les trois étapes synthétisent le parcours d'adoption pour rassurer les nouveaux utilisateurs. Des accès rapides aux services (pet-sitting, promenade, boutique) sont également présents pour orienter les différents profils de visiteurs.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{acceuill.png}
+  \caption{Interface Accueil}
+  \label{fig:ui-accueil}
+\end{figure}
+
+\subsubsection{Catalogue des Animaux}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{catalogue.png}
+  \caption{Interface Catalogue des Animaux}
+  \label{fig:ui-animaux}
+\end{figure}
+
+Le catalogue (F02) est l'interface centrale de la plateforme. Le panneau de filtres latéral permet de rechercher par espèce, race, wilaya, adaptabilité et tempérament. Chaque carte affiche les informations essentielles (espèce, race, âge, sociabilité) pour une pré-sélection rapide. L'affichage en grille à trois colonnes optimise la densité d'information tout en conservant la lisibilité. Les filtres sont appliqués côté client via le hook \texttt{useFilters}, garantissant une réactivité immédiate sans appel serveur supplémentaire.
+
+\subsubsection{Signalement}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{signal.png}
+  \caption{Interface Signalement}
+  \label{fig:ui-signalement}
+\end{figure}
+
+L'interface de signalement (F04) est accessible sans authentification, conformément aux exigences de la section~1.4.4. Le formulaire est organisé en trois étapes séquentielles pour guider un utilisateur non familier. Un numéro de téléphone d'urgence est affiché en permanence, offrant une alternative directe pour les situations critiques. Ce choix ergonomique vise à maximiser la rapidité de signalement, facteur déterminant pour la sécurité animale.
+
+\subsubsection{E-Boutique et Paiement}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{boutique.png}
+  \caption{Interface E-Boutique Solidaire}
+  \label{fig:ui-boutique}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{paiement.png}
+  \caption{Interface Simulation de Paiement}
+  \label{fig:ui-paiement}
+\end{figure}
+
+La boutique solidaire (F05) présente les produits de tous les refuges partenaires dans un catalogue unifié filtrable par catégorie. L'ajout au panier est géré localement via \texttt{CartContext} pour garantir une expérience fluide. L'interface de paiement simulée reproduit les trois étapes d'un achat réel (coordonnées, livraison, paiement) avec récapitulatif permanent. La mention « SIMULATION --- AUCUNE DONNÉE RÉELLE COLLECTÉE » informe clairement l'utilisateur du caractère non transactionnel du paiement dans cette version.
+
+\subsubsection{Services --- Pet-Sitting \& Promenade}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{services.png}
+  \caption{Interface Services}
+  \label{fig:ui-services}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{profilprest.png}
+  \caption{Interface Profil Prestataire et Réservation}
+  \label{fig:ui-reservation}
+\end{figure}
+
+La page services (F06, F07) liste les prestataires avec leurs caractéristiques clés (note, tarif, ville, espèces acceptées) et des filtres de tri. Le profil détaillé présente la biographie, les spécialités, les avis clients et les informations pratiques. Le bouton « Réserver maintenant » est placé en haut à droite pour maximiser sa visibilité. L'ensemble du flux de réservation s'effectue sans rechargement de page.
+
+\subsubsection{Refuges}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{refuges.png}
+  \caption{Interface Refuges}
+  \label{fig:ui-refuges}
+\end{figure}
+
+La page des refuges partenaires (F02) offre une vue d'ensemble de toutes les structures inscrites sur la plateforme. Elle répond directement au problème d'absence de visibilité numérique identifié dans l'analyse de l'existant : un adoptant potentiel peut désormais localiser les refuges de sa wilaya, consulter leurs indicateurs clés (nombre d'animaux disponibles, bénévoles actifs, animaux adoptés) et accéder directement à leurs fiches animaux. Chaque carte de refuge affiche le statut de vérification par l'équipe Adopty, garantissant la fiabilité des informations présentées. Ce système de vérification constitue un mécanisme de confiance essentiel pour une plateforme destinée à des particuliers effectuant un acte d'adoption responsable.
+
+\subsubsection{Messagerie en Temps Réel}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{conversation.png}
+  \caption{Interface Messagerie (Socket.IO)}
+  \label{fig:ui-chat}
+\end{figure}
+
+L'interface de messagerie (F08) adopte une disposition standard à deux panneaux : liste des conversations à gauche, fil actif à droite. Les messages apparaissent instantanément grâce à Socket.IO. Un compteur de messages non lus est affiché sur chaque conversation. Cette interface centralise les échanges entre adoptants et gérants de refuges, ou entre propriétaires et prestataires, remplaçant les communications dispersées (téléphone, e-mail, réseaux sociaux).
+
+\subsection{Dashboard Prestataire}
+
+Le \textbf{PrestataireDashboard} (F09) centralise la gestion du profil, des disponibilités, des réservations en attente et des avis reçus. Des indicateurs en tête de page (réservations, avis, revenu total) permettent au prestataire d'évaluer son activité d'un coup d'œil. La section « Mes disponibilités » permet de définir des créneaux avec récurrence.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{dashprest.png}
+  \caption{Dashboard Prestataire}
+  \label{fig:ui-dash-presta}
+\end{figure}
+
+\subsection{Dashboard Gérant de Refuge}
+
+Le \textbf{RefugeDashboard} est l'outil de gestion opérationnelle quotidienne du refuge. Ses indicateurs (adoptions, commandes, animaux, urgences, produits, stock) donnent une vision instantanée. Les onglets latéraux permettent de naviguer entre les modules de gestion : fiches animaux, demandes d'adoption, boutique et signalements.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{dashboard_refuge.png}
+  \caption{Dashboard Gérant --- Vue d'ensemble}
+  \label{fig:ui-dash-refuge}
+\end{figure}
+
+\subsection{Dashboard Administrateur}
+
+Le \textbf{AdminDashboard} offre à l'administrateur une vision globale et synthétique de l'activité de la plateforme. Les quatre indicateurs principaux --- animaux en refuge, adoptions du mois, chiffre d'affaires boutique et signalements en attente --- sont calculés dynamiquement par des requêtes SQL directes sur la base de données, garantissant des données en temps réel sans intermédiaire. Ce choix technique est délibéré : il évite la complexité d'un cache applicatif et rend le code des contrôleurs lisible et maintenable.
+
+Le menu latéral donne accès aux six modules de gestion : utilisateurs (liste, bannissement), refuges (validation, modification), signalements (résolution, rejet), prestataires (supervision), statistiques globales et paramètres. La validation d'un refuge change son statut de \textit{En attente} à \textit{Vérifié}, le rendant ainsi visible dans les résultats de recherche. Ce flux d'approbation constitue le principal mécanisme de qualité de la plateforme.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{admin.png}
+  \caption{Dashboard Administrateur}
+  \label{fig:ui-superadmin}
+\end{figure}
+
+\section{Tests et Validation}
+
+\subsection{Stratégie de tests}
+
+La stratégie de tests d'Adopty repose sur deux niveaux complémentaires :
+\begin{itemize}[leftmargin=2em,itemsep=3pt]
+  \item \textbf{Tests unitaires automatisés} (Vitest) : vérification de la logique interne des contrôleurs et middlewares backend, sans base de données réelle.
+  \item \textbf{Tests fonctionnels manuels} : vérification du comportement complet de l'application depuis l'interface utilisateur, en conditions réelles.
+\end{itemize}
+
+\subsection{Tests unitaires automatisés --- Vitest}
+
+\subsubsection{Pourquoi Vitest ?}
+
+\textbf{Vitest} est un framework de tests unitaires pour JavaScript. Il a été retenu car il est nativement compatible avec les modules ES (\texttt{import}/\texttt{export}) utilisés dans tout le projet, sans configuration supplémentaire. Les alternatives (Jest, Mocha) nécessitent une transpilation ou une configuration Babel pour fonctionner avec les ES Modules.
+
+\subsubsection{Principe --- Simulation de la base de données (Mocking)}
+
+Les tests unitaires n'utilisent pas la vraie base de données. Les fonctions d'accès aux données (\texttt{getUtilisateurByClerkId}, \texttt{createCheckout}, etc.) sont \textit{simulées} (\textit{mockées}) via \texttt{vi.mock()} : on leur substitue des fonctions qui retournent des données préparées. Cela garantit que chaque test vérifie exclusivement la logique métier du contrôleur ou du middleware, indépendamment de l'état de la base de données et de la connexion réseau.
+
+\textbf{Exemple concret} : pour tester que \texttt{protectRoute} retourne bien une erreur \texttt{401} quand aucun token n'est fourni, on n'a pas besoin de Clerk ni de MySQL. On simule l'absence de token et on vérifie que le code répond correctement.
+
+\subsubsection{Couverture des tests}
+
+Le projet dispose de \textbf{5 fichiers de tests} couvrant les modules critiques du backend :
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.35\linewidth}C{0.08\linewidth}L{0.48\linewidth}@{}}
+\toprule
+\textbf{Fichier de test} & \textbf{Tests} & \textbf{Ce qui est vérifié} \\
+\midrule
+\texttt{auth.middleware.test.js} & 20 & Middlewares de contrôle d'accès (\texttt{protectRoute}, \texttt{adminOnly}, \texttt{refugeOnly}, \texttt{prestataireOnly}, \texttt{hasAnyRole}, \texttt{isOwnerOrAdmin}, \texttt{socketAuth}) \\
+\texttt{checkout.test.js} & 15 & Processus de commande boutique : validation panier, création commande, récupération historique, mise à jour statut sous-commande \\
+\texttt{demande\_adoption.test.js} & 19 & Cycle complet d'adoption : création, acceptation, refus, annulation, cas d'erreur \\
+\texttt{reservation.test.js} & 17 & Réservations de services : création, mise à jour statut, annulation, vues refuge et prestataire \\
+\texttt{signalement.test.js} & 15 & Signalements : création, résolution et rejet par l'admin, récupération \\
+\midrule
+\textbf{Total} & \textbf{86} & \\
+\bottomrule
+\end{tabular}
+\caption{Fichiers de tests unitaires Vitest --- Adopty}
+\label{tab:vitest}
+\end{table}
+
+\subsubsection{Cas testés systématiquement}
+
+Pour chaque fonctionnalité, les scénarios suivants sont couverts :
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item \textbf{Cas nominal} (\texttt{200}/\texttt{201}) : données valides, utilisateur authentifié avec le bon rôle.
+  \item \textbf{Données manquantes ou invalides} (\texttt{400}) : champ obligatoire absent, format incorrect.
+  \item \textbf{Accès non autorisé} (\texttt{401}) : token absent, utilisateur inexistant en BDD.
+  \item \textbf{Rôle insuffisant} (\texttt{403}) : utilisateur connecté mais sans la permission requise.
+  \item \textbf{Ressource introuvable} (\texttt{404}) : ID inconnu en base de données.
+  \item \textbf{Erreur serveur} (\texttt{500}) : simulation d'une panne base de données.
+\end{itemize}
+
+\subsubsection{Résultats}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.30\linewidth}C{0.12\linewidth}C{0.12\linewidth}L{0.35\linewidth}@{}}
+\toprule
+\textbf{Suite} & \textbf{Tests} & \textbf{Statut} & \textbf{Durée} \\
+\midrule
+auth.middleware & 20 & \textcolor{okgreen}{\textbf{20/20}} & 89 ms \\
+checkout & 15 & \textcolor{okgreen}{\textbf{15/15}} & 78 ms \\
+demande\_adoption & 19 & \textcolor{okgreen}{\textbf{19/19}} & 65 ms \\
+reservation & 17 & \textcolor{okgreen}{\textbf{17/17}} & 67 ms \\
+signalement & 15 & \textcolor{okgreen}{\textbf{15/15}} & 70 ms \\
+\midrule
+\textbf{Total} & \textbf{86} & \textcolor{okgreen}{\textbf{86/86}} & \textbf{1,82 s} \\
+\bottomrule
+\end{tabular}
+\caption{Résultats de la suite de tests Vitest}
+\label{tab:vitest-results}
+\end{table}
+
+La commande \texttt{npm test} exécutée dans le dossier \texttt{backend/} lance l'intégralité de la suite en moins de 2 secondes. Les 86 tests passent sans erreur.
+
+\subsection{Tests des endpoints API}
+
+Parallèlement aux tests unitaires, chaque endpoint REST a été validé manuellement avec \textbf{Thunder Client} (extension VS Code) pendant le développement. Les quatre scénarios systématiquement vérifiés pour chaque route :
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Requête sans token : réponse \texttt{401 Unauthorized}
+  \item Requête avec rôle insuffisant : réponse \texttt{403 Forbidden}
+  \item Données invalides ou incomplètes : réponse \texttt{400 Bad Request}
+  \item Requête valide et authentifiée : réponse \texttt{200 OK} ou \texttt{201 Created}
+\end{itemize}
+
+\subsection{Tests fonctionnels manuels}
+
+Les tests fonctionnels couvrent les neuf modules du cahier des charges en conditions réelles.
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.38\linewidth}L{0.16\linewidth}L{0.35\linewidth}@{}}
+\toprule
+\textbf{Scénario} & \textbf{Résultat} & \textbf{Observations} \\
+\midrule
+Inscription et connexion (e-mail + OAuth) & Conforme & Synchronisation Inngest vérifiée \\
+Demande d'adoption et traitement refuge & Conforme & Statut mis à jour dans l'interface \\
+Signalement sans connexion & Conforme & Enregistré en BDD, visible admin \\
+Commande boutique (panier + livraison) & Conforme & Décompte stock vérifié \\
+Réservation de service (pet-sitting) & Conforme & Statuts corrects \\
+Chat temps réel (deux utilisateurs) & Conforme & Messagerie instantanée fonctionnelle \\
+Accès route admin par utilisateur standard & Conforme & \texttt{403} retourné côté Express \\
+Upload photo animal (Cloudinary) & Conforme & URL stockée en BDD \\
+Dashboard admin --- statistiques réelles & Conforme & Compteurs issus de requêtes SQL \\
+\bottomrule
+\end{tabular}
+\caption{Résultats des tests fonctionnels manuels}
+\label{tab:tests}
+\end{table}
+
+\section{Difficultés Rencontrées}
+
+\subsection*{Gestion des rôles et des permissions}
+
+Faire coexister quatre types d'utilisateurs avec des permissions différentes, aussi bien côté React que côté Express, s'est avéré plus complexe que prévu. Il a fallu concevoir une logique de vérification cohérente sur toute la chaîne, du composant React jusqu'à l'endpoint API, en gérant les cas limites (token expiré, rôle modifié entre deux requêtes).
+
+\subsection*{Intégration frontend-backend}
+
+La synchronisation des structures de données entre les équipes frontend et backend a généré des frictions : un champ renommé côté serveur pouvait rompre silencieusement un composant React. L'introduction du pattern Mapper côté frontend a permis de centraliser ces transformations et d'isoler l'interface des variations du schéma API.
+
+\subsection*{Sécurisation du chat WebSocket}
+
+Les connexions WebSocket ne transitent pas par les middlewares HTTP classiques. La vérification du token JWT Clerk au handshake Socket.IO a nécessité une approche spécifique, exploitant les paramètres de connexion Socket.IO pour transporter et valider le token côté serveur.
+
+\subsection*{Intégration d'un système de paiement}
+
+L'intégration d'une passerelle réelle s'est heurtée à des contraintes pratiques (compte marchand, prérequis bancaires algériens). L'équipe a opté pour une simulation complète reproduisant fidèlement l'expérience utilisateur sans dépendances externes.
+
+\subsection*{Gestion du temps et des priorités}
+
+L'équipe a appliqué une priorisation stricte MoSCoW, livrant d'abord le cœur fonctionnel avant les innovations. Certaines fonctionnalités ont été partiellement implémentées ou reportées, conformément aux compromis inévitables de tout développement logiciel contraint dans le temps.
+
+\section{Bilan des Fonctionnalités}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}L{0.46\linewidth}L{0.13\linewidth}L{0.32\linewidth}@{}}
+\toprule
+\textbf{Fonctionnalité} & \textbf{Statut} & \textbf{Commentaire} \\
+\midrule
+Authentification (Clerk + Inngest) & \statutOK & Sync BDD, rôles, routes protégées. \\
+Catalogue animaux avec filtres & \statutOK & Espèce, race, wilaya, statut. \\
+Fiche détaillée d'un animal & \statutOK & 14+ attributs, galerie, vaccins, race. \\
+Demande d'adoption & \statutOK & Formulaire, suivi, validation gérant. \\
+Signalement & \statutOK & Accessible sans connexion. \\
+E-Boutique (panier + wishlist) & \statutOK & CartContext, wishlist BDD. \\
+Simulation de paiement & \statutOK & Parcours complet simulé. \\
+Services pet-sitting et promenade & \statutOK & Annonces, réservations, avis. \\
+Dashboard multi-rôles & \statutOK & Hub, Refuge, Prestataire, Admin. \\
+Notifications dans l'interface & \statutOK & Suivi statut adoptions, réservations, commandes. \\
+Chat temps réel (Socket.IO) & \statutPartiel & Fonctionnel, stabilité à améliorer. \\
+Statistiques dashboard admin & \statutOK & Requêtes SQL directes, données temps réel. \\
+Export PDF/CSV & \statutNon & Hors périmètre MVP. Version future. \\
+Suivi GPS de promenade & \statutNon & Complexité élevée. Version future. \\
+Application mobile & \statutNon & Hors périmètre L3. \\
+Paiement réel (Stripe/BaridiMob) & \statutNon & Contraintes pratiques. Simulation retenue. \\
+\bottomrule
+\end{tabular}
+\caption{Bilan des fonctionnalités implémentées et reportées}
+\label{tab:bilan}
+\end{table}
+
+\section{Conclusion}
+
+Ce chapitre a présenté la réalisation concrète d'Adopty : des technologies sélectionnées pour des raisons justifiées par le contexte du projet, des interfaces pensées pour chaque profil d'utilisateur, une validation assurée par des tests fonctionnels manuels structurés, et un bilan transparent des fonctionnalités livrées.
+
+% ============================================================
+\chapter*{Conclusion Générale}
+\addcontentsline{toc}{chapter}{Conclusion Générale}
+\thispagestyle{plain}
+
+Le projet Adopty est issu d'un constat documenté et récurrent : les refuges animaliers en Algérie ne disposent pas des outils numériques nécessaires à l'accomplissement efficace de leur mission. Ce constat a motivé la conception d'une plateforme web fonctionnelle articulée autour de neuf modules, d'une base de données relationnelle de quarante tables, et d'une architecture technique cohérente et extensible.
+
+Au-delà des aspects techniques, ce projet a permis à l'équipe de développer des compétences transversales essentielles à tout développement logiciel collaboratif : gestion de versions sous Git, synchronisation entre équipes frontend et backend, priorisation des fonctionnalités sous contrainte temporelle, et documentation des décisions d'architecture. Ces compétences constituent un acquis pédagogique fondamental, complémentaire aux enseignements théoriques du cursus.
+
+La présente version d'Adopty constitue un prototype fonctionnel dont certaines fonctionnalités restent partielles ou reportées. Le socle fonctionnel est néanmoins opérationnel, l'architecture est conçue pour être extensible, et les fondations techniques permettent une évolution continue vers une version de production.
+
+Parmi les perspectives pour une version future :
+\begin{itemize}[leftmargin=2em,itemsep=2pt]
+  \item Un système de recommandation d'animaux basé sur le profil de l'adoptant.
+  \item Une application mobile native (React Native) pour iOS et Android.
+  \item L'intégration d'un moyen de paiement algérien réel (BaridiMob, CIB).
+  \item L'extension à d'autres refuges à travers le territoire national.
+  \item Un carnet de santé numérique par animal, en partenariat vétérinaire.
+  \item L'extension de la couverture de tests aux tests end-to-end (Cypress ou Playwright).
+\end{itemize}
+
+Nous remercions M. Goutal Abdelhak pour son encadrement tout au long de ce projet.
+
+% ============================================================
+\chapter*{Bibliographie et Webographie}
+\addcontentsline{toc}{chapter}{Bibliographie et Webographie}
+\thispagestyle{plain}
+
+\subsection*{Références académiques [format IEEE]}
+
+\begin{enumerate}[label={[\arabic*]},leftmargin=2.5em,itemsep=3pt]
+  \item E. Gamma, R. Helm, R. Johnson et J. Vlissides, \textit{Design Patterns: Elements of Reusable Object-Oriented Software}. Addison-Wesley, 1994.
+  \item M. Fowler, \textit{Patterns of Enterprise Application Architecture}. Addison-Wesley, 2002.
+  \item R. T. Fielding, « Architectural Styles and the Design of Network-based Software Architectures », Thèse de doctorat, Univ. of California, Irvine, 2000. \url{https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm}
+  \item S. Newman, \textit{Building Microservices}, 2\textsuperscript{e}~éd. O'Reilly Media, 2021.
+  \item A. Banks et E. Porcello, \textit{Learning React}, 2\textsuperscript{e}~éd. O'Reilly Media, 2020.
+  \item D. Flanagan, \textit{JavaScript: The Definitive Guide}, 7\textsuperscript{e}~éd. O'Reilly Media, 2020.
+  \item I. Fette et A. Melnikov, « The WebSocket Protocol », RFC~6455, IETF, déc. 2011. \url{https://www.rfc-editor.org/rfc/rfc6455}
+\end{enumerate}
+
+\subsection*{Documentation technique officielle}
+
+\begin{enumerate}[label={[\arabic*]},leftmargin=2.5em,itemsep=2pt,start=8]
+  \item React.js --- \url{https://react.dev} \quad [Consulté : mai 2026]
+  \item Vite --- \url{https://vite.dev} \quad [Consulté : mai 2026]
+  \item React Router v7 --- \url{https://reactrouter.com} \quad [Consulté : mai 2026]
+  \item Node.js --- \url{https://nodejs.org/docs} \quad [Consulté : mai 2026]
+  \item Express.js v5 --- \url{https://expressjs.com} \quad [Consulté : mai 2026]
+  \item TiDB Cloud --- \url{https://tidbcloud.com/docs} \quad [Consulté : mai 2026]
+  \item Clerk --- \url{https://clerk.com/docs} \quad [Consulté : mai 2026]
+  \item Inngest --- \url{https://www.inngest.com/docs} \quad [Consulté : mai 2026]
+  \item Socket.IO --- \url{https://socket.io/docs} \quad [Consulté : mai 2026]
+  \item Cloudinary --- \url{https://cloudinary.com/documentation} \quad [Consulté : mai 2026]
+  \item Tailwind CSS --- \url{https://tailwindcss.com/docs} \quad [Consulté : mai 2026]
+  \item MDN Web Docs --- \url{https://developer.mozilla.org} \quad [Consulté : mai 2026]
+\end{enumerate}
+
+\end{document}

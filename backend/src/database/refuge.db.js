@@ -4,17 +4,14 @@ import { Refuge } from "../modeles/refuge.model.js";
 
 export const CreateRefuge = async (refuge) => {
     const [result] = await db.query(
-        `INSERT INTO refuge (Nom,Description,Addresse,AddresseGPS,Date_inscription,Telephone,stripeAccountId,stripeAccountStatus)
-        VALUES(?,?,?,?,NOW(),?,?,?)`,
+        `INSERT INTO refuge (Nom,Description,Addresse,AddresseGPS,Date_inscription,Telephone)
+        VALUES(?,?,?,?,NOW(),?)`,
         [
             refuge.Nom,
             refuge.Description,
             refuge.Addresse,
             refuge.AddresseGPS,
-            
-            refuge.Telephone,
-            refuge.stripeAccountId,
-            refuge.stripeAccountStatus
+            refuge.Telephone
         ]
     );
 
@@ -44,20 +41,14 @@ export const updateRefuge = async (id, refuge) => {
       Description = ?,
       Addresse = ?,
       AddresseGPS = ?,
-      
-      Telephone = ?,
-      stripeAccountId = ?,
-      stripeAccountStatus = ?
+      Telephone = ?
      WHERE Id = ?`,
     [
       refuge.Nom,
       refuge.Description,
       refuge.Addresse,
       refuge.AddresseGPS,
-      
       refuge.Telephone,
-      refuge.stripeAccountId,
-      refuge.stripeAccountStatus,
       id
     ]
   );
@@ -83,7 +74,7 @@ export const getRefugeAnimalsById = async (id) => {
     `SELECT a.* FROM refuge r
      JOIN possession p ON r.Id = p.IdRefuge
      JOIN animal a ON p.IdAnimal = a.Id
-     WHERE r.Id = ? AND p.IdUtilisateur IS NULL`,  //    <= c'est sous condition todo:(a surveiller)
+     WHERE r.Id = ? AND p.IdUtilisateur IS NULL`,  // a surveiller: pour pas check les animaux adoptes
      [
       id
      ]
@@ -92,7 +83,7 @@ export const getRefugeAnimalsById = async (id) => {
   return rows.map(row =>new Animal(row));
 }
 
- //   todo : check les deux funcs juste en bas car pas fini 
+ // a retester plus tard ces requetes de transfert
 
 export const addAnimalToRefugeByIds = async (animalId, refugeId) => {
     const [result] = await db.query(
@@ -138,7 +129,7 @@ export const unsetAnimalToRefugeByIds = async (animalId, refugeId) => {
     const [result] = await db.query(
         `UPDATE possession SET
          IdRefuge = NULL
-        WHERE IdAnimal =? AND IdRefuge = ? AND IdUtilisateur IS NOT NULL`,   //    <= todo:(a voir si ca fonctionne)
+        WHERE IdAnimal =? AND IdRefuge = ? AND IdUtilisateur IS NOT NULL`,   // pas sur que ca marche a 100%
         [
             animalId,
             refugeId

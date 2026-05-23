@@ -4,9 +4,7 @@ import { Vaccin } from "../modeles/vaccin.model.js";
 import { Refuge } from "../modeles/refuge.model.js";
 
 // pour tout les fichiers requetes
-// TODO: add pagination
-// TODO: validate input
-// TODO: handle transactions
+// a voir pour plus tard: ajouter la pagination et les transactions si on a le temps
 
 export const createAnimal = async (animal) => {
     const [result] = await db.query(
@@ -26,7 +24,7 @@ export const createAnimal = async (animal) => {
             animal.NiveauEnergetique,
             animal.SociableEnfant,
             animal.SociableAnimaux,
-            animal.Statut,    //      <= bizzare
+            animal.Statut,    // je sais plus pourquoi javais mis ca comme ca
             animal.Race,
             //animal.Date_ajout
         ]
@@ -118,7 +116,7 @@ export const updateAnimal = async (id, animal) => {
       animal.NiveauEnergetique,
       animal.SociableEnfant,
       animal.SociableAnimaux,
-      animal.Statut,    //      <= bizzare
+      animal.Statut,    // pareil ici
       animal.Race,
       //animal.Date_ajout,
       id

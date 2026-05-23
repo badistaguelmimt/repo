@@ -124,4 +124,4 @@ export async function getStatutOfPaiementCommandeControlleur(req,res) {
     }
 }
 
-// todo: ajouter les controlleurs , requetes et... pour le stripe_payment_intent_id  (ne foirez pas ca)
+// paiement simulé mnt, plus besoin de gerer l'intent stripe

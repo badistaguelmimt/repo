@@ -5,14 +5,13 @@ import { Role } from "../modeles/role.model.js";
 import { Utilisateur } from "../modeles/utilisateur.model.js";
 
 export const createUtilisateur = async (user) => {
-  const [result] = await db.query(  // todo: enleve les stripes d'ici a la fin du projet
+  // on a enlevé stripe car mnt on simule le paiement
+  const [result] = await db.query(
     `INSERT INTO utilisateur 
-    (clerkId, stripeCustomerId , stripeAccountId, Nom, Prenom, Addresse, AddresseEmail, Wilaya, MotDePasse, Photo, CreeLe, CreePar, stripeAccountStatus)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)`,
+    (clerkId, Nom, Prenom, Addresse, AddresseEmail, Wilaya, MotDePasse, Photo, CreeLe, CreePar)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
     [
       user.clerkId,
-      user.stripeCustomerId,
-      user.stripeAccountId,
       user.Nom,
       user.Prenom,
       user.Addresse,
@@ -20,8 +19,7 @@ export const createUtilisateur = async (user) => {
       user.Wilaya,
       user.MotDePasse,
       user.Photo,
-      user.CreePar,
-      user.stripeAccountStatus
+      user.CreePar
     ]
   );
 
@@ -55,10 +53,7 @@ export const updateUtilisateur = async (id, user) => {
       Wilaya = ?, 
       Photo = ?, 
       ModifieeLe = NOW(),
-      ModifieePar = ?,
-      stripeAccountStatus = COALESCE(?, stripeAccountStatus),
-      stripeAccountId = COALESCE(?, stripeAccountId)
-
+      ModifieePar = ?
      WHERE Id = ?`,
     [
       user.Nom,
@@ -69,8 +64,6 @@ export const updateUtilisateur = async (id, user) => {
       user.Wilaya,
       user.Photo,
       user.ModifieePar,
-      user.stripeAccountStatus,
-      user.stripeAccountId,
       id
     ]
   );
@@ -216,7 +209,7 @@ export const getUtilisateurAnimalsById = async (id) => {
     `SELECT a.* FROM utilisateur u
      JOIN possession p ON u.Id = p.IdUtilisateur 
      JOIN animal a ON p.IdAnimal = a.Id
-     WHERE u.Id = ? AND p.IdRefuge IS NULL`,  //    <= c'est sous condition todo:(a surveiller)
+     WHERE u.Id = ? AND p.IdRefuge IS NULL`,  // a surveiller: condition pour pas melanger avec refuge
      [
       id
      ]
@@ -271,7 +264,7 @@ export const unsetAnimalToUtilisateurByIds = async (animalId, utilisateurId) => 
     const [result] = await db.query(
         `UPDATE possession SET
          IdUtilisateur = NULL
-        WHERE IdAnimal =? AND IdUtilisateur = ? AND IdRefuge IS NOT NULL`,   //    <= todo:(a voir si ca fonctionne)
+        WHERE IdAnimal =? AND IdUtilisateur = ? AND IdRefuge IS NOT NULL`,   // pas sur que ca marche a 100% ca
         [
             animalId,
             utilisateurId
