@@ -108,9 +108,121 @@ export const payProduct = async (req, res) => {
 export const payService = async (req, res) => {
     try {
         const { reservationId, userId, amount } = req.body;
-        const paymentIntent = await paymentService.createServicePaymentIntent(reservationId, userId, amount);
-        res.json({ clientSecret: paymentIntent.client_secret });
+
+        // Récupérer les infos de l'utilisateur pour enrichir le PaymentIntent
+        const [users] = await db.query(
+            "SELECT AddresseEmail AS email, Nom AS nom FROM utilisateur WHERE Id = ?",
+            [userId]
+        );
+
+        if (!users[0]) return res.status(404).json({ error: "Utilisateur non trouvé" });
+
+        const paymentIntent = await paymentService.createServicePaymentIntent(
+            reservationId,
+            userId,
+            amount,
+            users[0].email,
+            users[0].nom
+        );
+        res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
     } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Crée un PaymentIntent couvrant une commande avec plusieurs sous-commandes (multi-vendeurs).
+// Chaque sous-commande est routée vers le compte Connect du refuge correspondant.
+export const payMultiVendorOrder = async (req, res) => {
+    try {
+        const { commandeId, userId, subOrders } = req.body;
+        // subOrders = [{ refugeId, Total_prix }, ...]
+
+        const [users] = await db.query(
+            "SELECT AddresseEmail AS email, Nom AS nom FROM utilisateur WHERE Id = ?",
+            [userId]
+        );
+
+        if (!users[0]) return res.status(404).json({ error: "Utilisateur non trouvé" });
+
+        const paymentIntent = await paymentService.createOrderWithSubOrders(
+            commandeId,
+            userId,
+            subOrders,
+            users[0].email,
+            users[0].nom
+        );
+
+        res.json({ clientSecret: paymentIntent.client_secret, paymentIntentId: paymentIntent.id });
+    } catch (error) {
+        console.error("Erreur paiement multi-vendeurs :", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Retourne le statut actuel d'un PaymentIntent Stripe.
+// Utile pour le frontend afin de confirmer si le paiement a abouti.
+export const getPaymentStatus = async (req, res) => {
+    try {
+        const { paymentIntentId } = req.params;
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+        res.json({
+            status: paymentIntent.status,
+            amount: paymentIntent.amount / 100,
+            currency: paymentIntent.currency,
+            clientSecret: paymentIntent.client_secret,
+            metadata: paymentIntent.metadata
+        });
+    } catch (error) {
+        console.error("Erreur récupération statut paiement :", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Retourne les informations détaillées d'un compte Stripe Connect.
+// Indique si le compte peut recevoir des paiements (charges_enabled) et effectuer des virements.
+export const getConnectedAccount = async (req, res) => {
+    try {
+        const { accountId } = req.params;
+        const account = await stripe.accounts.retrieve(accountId);
+
+        res.json({
+            id: account.id,
+            email: account.email,
+            business_type: account.business_type,
+            charges_enabled: account.charges_enabled,
+            payouts_enabled: account.payouts_enabled,
+            details_submitted: account.details_submitted,
+            status: account.charges_enabled && account.payouts_enabled ? "verified" : "pending"
+        });
+    } catch (error) {
+        console.error("Erreur récupération compte Connect :", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// Génère un nouveau lien d'onboarding Stripe Connect pour un compte existant.
+// Nécessaire quand le lien initial a expiré (durée de vie : ~5 minutes).
+export const refreshOnboardingLink = async (req, res) => {
+    try {
+        const { accountId, type } = req.params; // type = 'refuge' ou 'prestataire'
+        const { refugeId } = req.body;
+
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+        const returnPath = type === "refuge"
+            ? `/refuge/${refugeId}/onboarding/success`
+            : `/prestataire/onboarding/success`;
+
+        const accountLink = await stripe.accountLinks.create({
+            account: accountId,
+            refresh_url: `${frontendUrl}/onboarding/refresh`,
+            return_url: `${frontendUrl}${returnPath}`,
+            type: "account_onboarding",
+        });
+
+        res.json({ success: true, onboardingUrl: accountLink.url });
+    } catch (error) {
+        console.error("Erreur rafraîchissement lien onboarding :", error);
         res.status(500).json({ error: error.message });
     }
 };

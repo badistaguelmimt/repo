@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from 'react-router-dom'
 import { PageTransition, FadeIn } from '../components/Animations'
 import Pagination from '../components/ui/Pagination'
+import ReportModal from '../components/ReportModal'
 import { getRefugeById, getAnimauxByRefuge } from '../services/publicApi'
 import { mapRefuge } from '../hooks/useRefuge'
 import { mapAnimals } from '../hooks/useAnimal'
 import { normalizeApiError } from '../lib/http'
+import { useStartConversation } from '../hooks/useStartConversation'
+import { useCurrentUser } from '../hooks/useCurrentUser'
 
 const AnimalCard = ({ animal }) => (
   <Link
@@ -71,6 +74,10 @@ const RefugeProfile = () => {
   const [error, setError] = useState(null)
   const [filterStatut, setFilterStatut] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
+
+  const { user: currentUser } = useCurrentUser()
+  const { startConversation, isLoading: isStarting } = useStartConversation()
 
   useEffect(() => {
     const load = async () => {
@@ -184,7 +191,6 @@ const RefugeProfile = () => {
               <div className="flex gap-4 md:gap-6 flex-shrink-0">
                 {[
                   { value: animaux.length, label: 'Animaux', icon: 'pets' },
-                  { value: refuge.capacite || '—', label: 'Capacité', icon: 'home' },
                 ].map(s => (
                   <div key={s.label} className="text-center bg-white/10 border border-white/20 rounded-2xl px-5 py-4">
                     <span className="material-symbols-outlined text-secondary-container text-lg block mb-1">{s.icon}</span>
@@ -278,7 +284,25 @@ const RefugeProfile = () => {
                   <InfoRow icon="location_city" label="Ville" value={refuge.ville} />
                   <InfoRow icon="phone" label="Téléphone" value={refuge.telephone} />
                   <InfoRow icon="mail" label="Email" value={refuge.email} />
-                  <InfoRow icon="schedule" label="Horaires" value={refuge.horaires} />
+
+                  {currentUser?.id && currentUser.id !== refuge.idUtilisateur && (
+                    <div className="mt-4 pb-3">
+                      <button
+                        onClick={() => startConversation(refuge.idUtilisateur, refuge.nom)}
+                        disabled={isStarting}
+                        className="w-full flex items-center justify-center gap-2 py-3 bg-primary text-white font-['Plus_Jakarta_Sans'] font-extrabold text-sm uppercase tracking-wider border-2 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isStarting ? (
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-sm">chat</span>
+                            Envoyer un message
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </FadeIn>
@@ -318,6 +342,17 @@ const RefugeProfile = () => {
               </div>
             </FadeIn>
 
+            {/* Bouton Signaler */}
+            <FadeIn delay={0.35}>
+              <button
+                onClick={() => setIsReportModalOpen(true)}
+                className="flex items-center gap-2 justify-center w-full px-5 py-3 bg-[#ba1a1a] text-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm rounded-lg"
+              >
+                <span className="material-symbols-outlined text-base">warning</span>
+                Signaler ce refuge
+              </button>
+            </FadeIn>
+
             {/* Lien retour */}
             <FadeIn delay={0.4}>
               <Link
@@ -331,6 +366,16 @@ const RefugeProfile = () => {
           </div>
         </div>
       </div>
+
+      {refuge && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          targetType="refuge"
+          targetId={refuge.id}
+          targetName={refuge.nom}
+        />
+      )}
     </PageTransition>
   )
 }

@@ -19,4 +19,16 @@ router.get("/connect/status/:accountId", stripeController.getAccountStatus);
 router.post("/payment/product", stripeController.payProduct);
 router.post("/payment/service", stripeController.payService);
 
+// Paiement multi-vendeurs : répartit le montant entre plusieurs comptes Connect
+router.post("/payment/multi-vendor", stripeController.payMultiVendorOrder);
+
+// Consulter le statut d'un PaymentIntent (utile pour le frontend post-paiement)
+router.get("/payment/status/:paymentIntentId", stripeController.getPaymentStatus);
+
+// Récupérer les informations d'un compte Connect (vérification onboarding)
+router.get("/connect/account/:accountId", stripeController.getConnectedAccount);
+
+// Rafraîchir le lien d'onboarding expiré d'un compte Connect
+router.post("/connect/refresh/:accountId/:type", stripeController.refreshOnboardingLink);
+
 export default router;

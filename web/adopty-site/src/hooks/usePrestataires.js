@@ -51,7 +51,7 @@ export const mapPrestataire = (prestataire) => ({
   disponible:      prestataire.disponible ?? true,
   animauxAcceptes: prestataire.animauxAcceptes ?? ['Chiens', 'Chats'],
   photo:           prestataire.photo ?? fallbackPhoto,
-  description:     prestataire.Bio ?? prestataire.description ?? 'Prestataire partenaire Adopty.',
+  description:     prestataire.Bio ?? prestataire.description ?? '',
   certifiee:       prestataire.certifiee ?? true,
   experience:      prestataire.Experience ?? prestataire.experience ?? 0,
 })

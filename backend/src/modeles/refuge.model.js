@@ -9,5 +9,6 @@ export class Refuge{
         this.Telephone = data.Telephone;
         this.stripeAccountId = data.stripeAccountId;
         this.stripeAccountStatus = data.stripeAccountStatus;
+        this.email = data.email;
     }
 }

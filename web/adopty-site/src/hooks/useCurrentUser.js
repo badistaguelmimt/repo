@@ -30,7 +30,7 @@ const mapUtilisateur = (raw) => {
     email:     toStr(user?.AddresseEmail) ?? toStr(user?.email) ?? null,
     adresse:   toStr(user?.Addresse) ?? toStr(user?.adresse)   ?? null,
     wilaya:    toStr(user?.Wilaya) ?? toStr(user?.wilaya)     ?? null,
-    telephone: toStr(user?.Wilaya) ?? toStr(user?.telephone)   ?? null,
+    telephone: toStr(user?.Telephone) ?? toStr(user?.telephone) ?? null,
     photo:     user?.Photo ?? user?.photo ?? null,
     creeLe:    user?.CreeLe ?? null,
   }

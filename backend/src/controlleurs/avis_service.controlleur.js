@@ -2,6 +2,7 @@ import { createAvisService, deleteAvisService, getAllAvisServices, getAvisServic
 import { getReservationById } from "../database/reservation.db.js";
 import { getTypeServiceById } from "../database/type_service.db.js";
 import { getUtilisateurById } from "../database/utilisateur.db.js";
+import { db } from "../config/db.js";
 
 export async function createAvisServiceControlleur(req,res) {
     try {
@@ -24,6 +25,26 @@ export async function createAvisServiceControlleur(req,res) {
             DateAvis,
             TypeAvis 
         })
+
+        // Met à jour automatiquement la NoteMoyenne du prestataire
+        try {
+            const [rows] = await db.query(`
+                SELECT AVG(a.Note) as avgNote, r.IdProfil 
+                FROM avis_service a
+                JOIN reservation r ON a.IdReservation = r.Id
+                WHERE r.IdProfil = (SELECT IdProfil FROM reservation WHERE Id = ?)
+            `, [IdReservation]);
+
+            if (rows && rows.length > 0 && rows[0].IdProfil) {
+                await db.query(`
+                    UPDATE profil_prestataire 
+                    SET NoteMoyenne = ? 
+                    WHERE Id = ?
+                `, [rows[0].avgNote, rows[0].IdProfil]);
+            }
+        } catch (e) {
+            console.error("Erreur mise a jour NoteMoyenne:", e);
+        }
 
         res.status(201).json({ message: "AvisService crée avec succès", id: requete });
         

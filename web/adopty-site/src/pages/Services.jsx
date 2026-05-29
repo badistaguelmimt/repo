@@ -92,8 +92,8 @@ const Services = () => {
           </FadeIn>
           <FadeIn delay={0.2} className="flex flex-wrap gap-6 mt-10">
             {[
-              { icon: 'verified_user', label: 'Prestataires certifiés', value: `${providersData.length}+` },
-              { icon: 'star', label: 'Note moyenne', value: providersData.length ? `${(providersData.reduce((s, p) => s + p.note, 0) / providersData.length).toFixed(1)}/5` : '—' },
+              { icon: 'verified_user', label: 'Prestataires certifiés', value: providersData.filter(p => p.certifiee).length.toString() },
+              { icon: 'star', label: 'Note moyenne', value: providersData.length && providersData.some(p => p.note > 0) ? `${(providersData.reduce((s, p) => s + p.note, 0) / providersData.filter(p => p.note > 0).length || 1).toFixed(1)}/5` : '—' },
               { icon: 'event_available', label: 'Services disponibles', value: SERVICES_DISPONIBLES.length.toString() },
             ].map(stat => (
               <div key={stat.label} className="flex items-center gap-3 bg-white/10 border-2 border-white/30 px-5 py-3 rounded-xl">
@@ -221,39 +221,7 @@ const Services = () => {
           </div>
         )}
 
-        {/* Section Devenir Prestataire */}
-        {!isPrestataire && !isRefuge && (
-          <FadeIn delay={0.3} className="mt-20 bg-secondary-fixed border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-10 rounded-xl">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-              <div>
-                <span className="text-5xl mb-4 block">🐾</span>
-                <h2 className="font-['Chewy'] text-4xl text-primary mb-4">Devenez Prestataire Adopty !</h2>
-                <p className="text-on-surface-variant leading-relaxed mb-6">
-                  Vous aimez les animaux et souhaitez partager votre passion tout en générant des revenus ? Rejoignez notre réseau de prestataires certifiés.
-                </p>
-                <ul className="space-y-2 mb-6">
-                  {['Horaires flexibles', 'Rémunération attractive', 'Formation offerte', 'Assurance incluse'].map(item => (
-                    <li key={item} className="flex items-center gap-2 font-bold text-sm">
-                      <span className="material-symbols-outlined text-primary text-lg">check_circle</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <div className="p-6 bg-white border-4 border-black rounded-xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] text-center space-y-3">
-                  <span className="material-symbols-outlined text-5xl text-primary">handshake</span>
-                  <h3 className="font-['Chewy'] text-2xl text-primary">Prêt à nous rejoindre ?</h3>
-                  <p className="text-sm text-on-surface-variant">Créez votre profil prestataire depuis votre espace personnel après inscription.</p>
-                  <a href="/sign-up"
-                    className="block w-full py-3 bg-primary text-white font-['Plus_Jakarta_Sans'] font-extrabold uppercase tracking-widest border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all text-sm">
-                    S'inscrire comme Prestataire →
-                  </a>
-                </div>
-              </div>
-            </div>
-          </FadeIn>
-        )}
+
       </div>
 
       {/* Modal réservation */}

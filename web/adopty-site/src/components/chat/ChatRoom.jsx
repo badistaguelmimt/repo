@@ -146,7 +146,9 @@ export const ChatRoom = ({
 
   // ── Auto-scroll + mark as read ────────────────────────────────────────────
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
+    }
 
     if (messages.length > 0 && dbUser) {
       const unread = messages.filter(
@@ -285,7 +287,6 @@ export const ChatRoom = ({
             )
           })
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {/* Indicateur typing (sous les messages) */}

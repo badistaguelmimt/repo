@@ -4,6 +4,7 @@ import { PageTransition, FadeIn } from '../components/Animations'
 import Modal from '../components/ui/Modal'
 import ReservationForm from '../components/forms/ReservationForm'
 import AvailabilityCalendar from '../components/ui/AvailabilityCalendar'
+import ReportModal from '../components/ReportModal'
 import { useRequireAuthAction } from '../hooks/useRequireAuthAction'
 import { useRoleAccess } from '../hooks/useRoleAccess'
 import { getDisponibilitesByProfil } from '../services/publicApi'
@@ -30,6 +31,7 @@ const ProfilPrestataire = () => {
   const { id } = useParams()
   const [reservationOpen, setReservationOpen] = useState(false)
   const [calendarView, setCalendarView]       = useState(false)
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false)
   const { requireAuthAction }                 = useRequireAuthAction()
   const { backendUserId, isSignedIn }         = useRoleAccess()
 
@@ -315,6 +317,19 @@ const ProfilPrestataire = () => {
                 </div>
               )}
             </FadeIn>
+
+            {/* Bouton Signaler (uniquement si pas le sien) */}
+            {!isSelf && (
+              <FadeIn delay={0.2}>
+                <button
+                  onClick={() => setIsReportModalOpen(true)}
+                  className="flex items-center gap-2 justify-center w-full px-5 py-3 bg-[#ba1a1a] text-white border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm rounded-lg mt-4"
+                >
+                  <span className="material-symbols-outlined text-base">warning</span>
+                  Signaler ce profil
+                </button>
+              </FadeIn>
+            )}
           </aside>
         </div>
       </div>
@@ -328,6 +343,16 @@ const ProfilPrestataire = () => {
       >
         <ReservationForm prestataire={prestataire} onClose={() => setReservationOpen(false)} />
       </Modal>
+
+      {prestataire && (
+        <ReportModal
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          targetType="prestataire"
+          targetId={prestataire.idUtilisateur}
+          targetName={prestataire.nom}
+        />
+      )}
     </PageTransition>
   )
 }

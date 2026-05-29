@@ -163,7 +163,7 @@ export async function bootstrapCurrentUtilisateurControlleur(req, res) {
             nomRefuge: toSafeString(req.body?.nomRefuge),
             siret: toSafeString(req.body?.siret),
             capacite: toSafeString(req.body?.capacite),
-            nomEntreprise: toSafeString(req.body?.nomEntreprise),
+            experience: toSafeString(req.body?.experience),
             service: toSafeString(req.body?.service),
             zone: toSafeString(req.body?.zone),
         };
@@ -238,12 +238,12 @@ export async function bootstrapCurrentUtilisateurControlleur(req, res) {
 
                     await createProfilPrestataire({
                         IdUtilisateur: utilisateur.Id,
-                        Experience: extra.nomEntreprise || "Nouveau prestataire",
+                        Experience: extra.experience || "0",
                         TarifHoraire: 0,
                         ZoneIntervention: (extra.zone || "Non spécifiée").substring(0, 100),
                         TypeService: typeServiceId,
                         Statut: 1,
-                        Bio: `Service: ${extra.service || "Non spécifié"}`,
+                        Bio: "",
                         NoteMoyenne: 0,
                     });
                 }

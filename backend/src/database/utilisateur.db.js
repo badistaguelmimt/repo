@@ -166,7 +166,7 @@ export const removeRoleToUtilisateurByIds = async (roleId, utilisateurId) => {
 
 export const getUtilisateurRefugesById = async (id) => {
   const [rows] = await db.query(
-    `SELECT r.* FROM utilisateur u
+    `SELECT r.*, u.AddresseEmail as email FROM utilisateur u
      JOIN refuge_utilisateur ru ON u.Id = ru.IdUtilisateur 
      JOIN refuge r ON ru.IdRefuge = r.Id
      WHERE u.Id = ?`,
@@ -175,7 +175,11 @@ export const getUtilisateurRefugesById = async (id) => {
      ]
   );
 
-  return rows.map(row =>new Refuge(row));
+  return rows.map(row => {
+    let ref = new Refuge(row);
+    ref.email = row.email;
+    return ref;
+  });
 }
 
 export const addRefugeToUtilisateurByIds = async (refugeId, utilisateurId) => {
@@ -272,4 +276,77 @@ export const unsetAnimalToUtilisateurByIds = async (animalId, utilisateurId) => 
     );
 
     return result.affectedRows;
-}
+};
+
+// ── Vérifier si un utilisateur gère un refuge spécifique ─────────────────────
+// Utilisée par le middleware refugeOnlyById pour la sécurité des routes de transfert.
+export const getUtilisateurRefugeByIds = async (id, IdRefuge) => {
+    const [rows] = await db.query(
+        `SELECT r.* FROM utilisateur u
+         JOIN refuge_utilisateur ru ON u.Id = ru.IdUtilisateur
+         JOIN refuge r ON ru.IdRefuge = r.Id
+         WHERE u.Id = ? AND r.Id = ?`,
+        [id, IdRefuge]
+    );
+
+    return rows.map(row => new Refuge(row));
+};
+
+// ── Transfert transactionnel d'un animal d'un utilisateur vers un refuge ─────
+// Utilise une transaction pour garantir l'atomicité de l'opération.
+export const transferUserToRefuge = async (animalId, userId, refugeId) => {
+    const connection = await db.getConnection();
+
+    try {
+        await connection.beginTransaction();
+
+        // 1. Vérifier que l'animal appartient bien à l'utilisateur
+        const [checkUser] = await connection.query(
+            `SELECT IdAnimal FROM possession
+             WHERE IdAnimal = ? AND IdUtilisateur = ? AND IdRefuge IS NULL`,
+            [animalId, userId]
+        );
+
+        if (checkUser.length === 0) {
+            throw new Error("L'animal n'appartient pas à cet utilisateur");
+        }
+
+        // 2. Retirer l'animal à l'utilisateur
+        const [unsetUser] = await connection.query(
+            `UPDATE possession SET IdUtilisateur = NULL
+             WHERE IdAnimal = ? AND IdUtilisateur = ? AND IdRefuge IS NULL`,
+            [animalId, userId]
+        );
+
+        if (unsetUser.affectedRows === 0) {
+            throw new Error("Erreur lors du retrait de l'animal à l'utilisateur");
+        }
+
+        // 3. Attribuer l'animal au refuge
+        const [setRefuge] = await connection.query(
+            `UPDATE possession SET IdRefuge = ?
+             WHERE IdAnimal = ? AND IdRefuge IS NULL AND IdUtilisateur IS NULL`,
+            [refugeId, animalId]
+        );
+
+        if (setRefuge.affectedRows === 0) {
+            throw new Error("Erreur lors de l'attribution de l'animal au refuge");
+        }
+
+        await connection.commit();
+
+        return {
+            success: true,
+            message: "Animal transféré avec succès de l'utilisateur vers le refuge",
+            animalId,
+            from: { type: "user", id: userId },
+            to: { type: "refuge", id: refugeId }
+        };
+
+    } catch (error) {
+        await connection.rollback();
+        throw error;
+    } finally {
+        connection.release();
+    }
+};

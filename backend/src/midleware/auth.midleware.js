@@ -1,6 +1,7 @@
 import { getAuth } from "@clerk/express";
+import { verifyToken } from "@clerk/backend";
 import { ENV } from "../config/env.js";
-import { getUtilisateurByClerkId, getUtilisateurRolesById } from "../database/utilisateur.db.js";
+import { getUtilisateurByClerkId, getUtilisateurRolesById, getUtilisateurRefugeByIds } from "../database/utilisateur.db.js";
 
 // Vérifie que la requête contient un token Clerk valide et que l'utilisateur existe en base.
 // Ce middleware est placé devant toutes les routes qui nécessitent une connexion.
@@ -121,14 +122,74 @@ export const isOwnerOrAdmin = (req, res, next) => {
     return res.status(403).json({ message: "Vous ne pouvez modifier que vos propres données" });
 };
 
+// Vérifie qu'un utilisateur est gestionnaire d'un refuge spécifique.
+// Utilise la table de liaison refuge_utilisateur.
+export const hasRefuge = async (utilisateurId, refugeId) => {
+    try {
+        const refuges = await getUtilisateurRefugeByIds(utilisateurId, refugeId);
+        return refuges.length > 0;
+    } catch (error) {
+        console.error("Erreur lors de la vérification du refuge :", error);
+        return false;
+    }
+};
+
+// Middleware pour les routes qui incluent :refugeId dans leurs paramètres.
+// Vérifie que l'utilisateur connecté est bien gestionnaire de ce refuge précis.
+// Utilisé pour les demandes de transfert inter-refuges.
+export const refugeOnlyById = async (req, res, next) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ message: "Non autorisé - token manquant" });
+        }
+
+        const { refugeId } = req.params;
+
+        if (!refugeId) {
+            return res.status(400).json({ message: "Paramètre refugeId manquant dans l'URL" });
+        }
+
+        const isManager = await hasRefuge(req.user.Id, refugeId);
+
+        if (!isManager) {
+            return res.status(403).json({
+                message: "Accès refusé - vous ne gérez pas ce refuge"
+            });
+        }
+
+        next();
+    } catch (error) {
+        console.error("Erreur dans le middleware refugeOnlyById :", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+};
+
 // Middleware d'authentification pour les connexions Socket.IO.
-// Le frontend envoie l'userId Clerk via socket.handshake.auth
+// Vérifie le JWT Clerk via verifyToken pour une sécurité renforcée.
 export const socketAuth = async (socket, next) => {
     try {
-        const clerkId = socket.handshake.auth?.userId;
-        if (!clerkId) return next(new Error("Utilisateur non identifié"));
+        const token = socket.handshake.auth?.token;
 
-        const user = await getUtilisateurByClerkId(clerkId);
+        // Fallback vers userId brut pour la compatibilité ascendante
+        if (!token) {
+            const clerkId = socket.handshake.auth?.userId;
+            if (!clerkId) return next(new Error("Utilisateur non identifié"));
+
+            const user = await getUtilisateurByClerkId(clerkId);
+            if (!user) return next(new Error("Utilisateur introuvable"));
+
+            socket.user = user;
+            return next();
+        }
+
+        // Vérification JWT (mode sécurisé préféré)
+        const payload = await verifyToken(token, {
+            secretKey: process.env.CLERK_SECRET_KEY,
+        });
+
+        if (!payload?.sub) return next(new Error("Token invalide"));
+
+        const user = await getUtilisateurByClerkId(payload.sub);
         if (!user) return next(new Error("Utilisateur introuvable"));
 
         socket.user = user;

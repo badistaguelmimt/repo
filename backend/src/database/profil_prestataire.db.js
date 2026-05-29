@@ -34,10 +34,16 @@ export const getAllProfilPrestataires = async () => {
 };
 
 export const getProfilPrestataireById = async (id) => {
-  const [rows] = await db.query(
-    "SELECT * FROM profil_prestataire WHERE Id = ?",
-    [id]
-  );
+  const [rows] = await db.query(`
+    SELECT
+      pp.*,
+      CONCAT(u.Prenom, ' ', u.Nom)  AS NomComplet,
+      ts.Type                       AS TypeServiceLabel
+    FROM profil_prestataire pp
+    LEFT JOIN utilisateur   u  ON pp.IdUtilisateur = u.Id
+    LEFT JOIN type_service  ts ON pp.TypeService   = ts.Id
+    WHERE pp.Id = ?
+  `, [id]);
 
   if (!rows[0]) return null;
 

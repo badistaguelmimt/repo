@@ -169,7 +169,18 @@ export const useChat = () => {
       conversationId: activeConvRef.current.Id,
       content: content.trim()
     }, (response) => {
-      if (!response?.success) {
+      if (response?.success && response.message) {
+        setMessages(prev => {
+          const next = [...prev]
+          const tempIdx = next.findIndex(m => m._tempId === tempId)
+          if (tempIdx !== -1) {
+            next[tempIdx] = response.message
+            return next
+          }
+          if (next.some(m => m.id === response.message.id)) return next
+          return [...next, response.message]
+        })
+      } else {
         console.error('[useChat] Échec envoi :', response?.error)
         setMessages(prev => prev.filter(m => m._tempId !== tempId))
       }

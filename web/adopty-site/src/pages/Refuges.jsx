@@ -29,14 +29,6 @@ const MiniAnimalCard = ({ animal }) => (
   </Link>
 )
 
-// Stat chip
-const StatChip = ({ icon, label, value }) => (
-  <div className="flex flex-col items-center bg-white border-2 border-black rounded-xl p-4 shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] text-center">
-    <span className="material-symbols-outlined text-primary text-2xl mb-1">{icon}</span>
-    <span className="font-['Chewy'] text-2xl text-primary">{value}</span>
-    <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{label}</span>
-  </div>
-)
 
 // Full refuge card with anchor id
 const RefugeCard = ({ refuge, allAnimals }) => {
@@ -88,38 +80,32 @@ const RefugeCard = ({ refuge, allAnimals }) => {
 
       <div className="p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Left column */}
-        <div className="lg:col-span-7 space-y-8">
+        <div className="lg:col-span-7 space-y-6">
           {/* Description */}
-          <div>
-            <p className="text-on-surface-variant leading-relaxed text-base">{refuge.description}</p>
-          </div>
-
-
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <StatChip icon="pets" label="Animaux" value={refuge.animauxTotal} />
-            <StatChip icon="people" label="Bénévoles" value={refuge.bénévoles} />
-            <StatChip icon="home" label="Capacité" value={refuge.capacite} />
-            <StatChip icon="straighten" label="Surface" value={refuge.surface} />
-          </div>
+          {refuge.description && refuge.description.trim() !== '' && (
+            <div className="bg-white/50 rounded-2xl p-5 border-2 border-black/10">
+              <p className="text-on-surface-variant leading-relaxed text-base">{refuge.description}</p>
+            </div>
+          )}
 
           {/* Specialites */}
-          <div>
-            <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-sm uppercase tracking-widest text-on-surface-variant mb-3">
-              Spécialités
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {refuge.specialites.map(s => (
-                <span
-                  key={s}
-                  className="bg-primary-fixed text-on-primary-fixed-variant border-2 border-black px-4 py-2 rounded-full font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
-                >
-                  {s}
-                </span>
-              ))}
+          {refuge.specialites && refuge.specialites.length > 0 && (
+            <div>
+              <h3 className="font-['Plus_Jakarta_Sans'] font-extrabold text-sm uppercase tracking-widest text-on-surface-variant mb-3">
+                Spécialités
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {refuge.specialites.map(s => (
+                  <span
+                    key={s}
+                    className="bg-primary-fixed text-on-primary-fixed-variant border-2 border-black px-4 py-2 rounded-full font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Right column */}
@@ -131,7 +117,6 @@ const RefugeCard = ({ refuge, allAnimals }) => {
             </h3>
             {[
               { icon: 'location_on', text: refuge.adresse },
-              { icon: 'schedule', text: refuge.horaires },
               { icon: 'phone', text: refuge.telephone },
               { icon: 'email', text: refuge.email },
             ].map(({ icon, text }) => (
@@ -282,16 +267,10 @@ const Refuges = () => {
 
         {/* Global stats banner */}
         <FadeIn delay={0.1}>
-          <div className="grid grid-cols-3 gap-4 mb-16 bg-[#154212] rounded-2xl p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <div className="text-center">
+          <div className="grid grid-cols-2 gap-4 mb-16 bg-[#154212] rounded-2xl p-6 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <div className="text-center border-r-2 border-white/10">
               <p className="font-['Chewy'] text-5xl text-white">{refugesData.length}</p>
               <p className="text-secondary-fixed text-xs uppercase tracking-widest font-bold mt-1">Refuges partenaires</p>
-            </div>
-            <div className="text-center border-x-2 border-white/10">
-              <p className="font-['Chewy'] text-5xl text-white">
-                {refugesData.reduce((sum, r) => sum + (r.bénévoles || 0), 0)}
-              </p>
-              <p className="text-secondary-fixed text-xs uppercase tracking-widest font-bold mt-1">Bénévoles actifs</p>
             </div>
             <div className="text-center">
               <p className="font-['Chewy'] text-5xl text-white">{animauxData.length}</p>

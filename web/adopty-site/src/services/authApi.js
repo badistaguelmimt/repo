@@ -300,3 +300,56 @@ export const findOrCreateDirectConversation = async (targetUserId) => {
 export const getMessagesByConversation = async (conversationId) => {
     return apiAuthRequest({ url: `/api/messages/conversation/messages/${conversationId}`, method: "get" }).catch(() => []);
 };
+
+// ─────────────────────────────────────────────
+// Demandes de Transfert (inter-refuges)
+// ─────────────────────────────────────────────
+
+/** Crée une demande de transfert d'animal entre deux refuges */
+export const createDemandeTransfert = async (data) => {
+    return apiAuthRequest({ url: "/api/demandes-transfert", method: "post", data });
+};
+
+/** Liste toutes les demandes de transfert (admin) */
+export const getAllDemandesTransfert = async () => {
+    return apiAuthRequest({ url: "/api/demandes-transfert", method: "get" });
+};
+
+/** Récupère une demande de transfert par ID */
+export const getDemandeTransfertById = async (id) => {
+    return apiAuthRequest({ url: `/api/demandes-transfert/${id}`, method: "get" });
+};
+
+/** Récupère les demandes de transfert émises par un refuge (départ) */
+export const getDemandesTransfertByRefugeDepart = async (refugeId) => {
+    return apiAuthRequest({
+        url: `/api/demandes-transfert/demandes_refuge_depart/${refugeId}/${refugeId}`,
+        method: "get",
+    });
+};
+
+/** Récupère les demandes de transfert reçues par un refuge (cible) */
+export const getDemandesTransfertByRefugeCible = async (refugeId) => {
+    return apiAuthRequest({
+        url: `/api/demandes-transfert/demandes_refuge_cible/${refugeId}/${refugeId}`,
+        method: "get",
+    });
+};
+
+/** Met à jour le statut d'une demande de transfert (accepter / refuser) */
+export const updateDemandeTransfertStatut = async (id, refugeId, { Statut, CommentaireRetour }) => {
+    return apiAuthRequest({
+        url: `/api/demandes-transfert/demandes/statut/${id}/${refugeId}`,
+        method: "patch",
+        data: { Statut, CommentaireRetour },
+    });
+};
+
+/** Supprime une demande de transfert */
+export const deleteDemandeTransfert = async (id, refugeId) => {
+    return apiAuthRequest({
+        url: `/api/demandes-transfert/${id}/${refugeId}`,
+        method: "delete",
+    });
+};
+

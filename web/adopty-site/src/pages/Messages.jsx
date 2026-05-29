@@ -121,7 +121,7 @@ const Messages = () => {
                   </p>
                   {conversations.length === 0 && !isLoadingConvs && (
                     <p className="text-xs text-on-surface-variant/60 mt-2 bg-surface-container px-4 py-2 rounded-full border border-outline-variant">
-                      💡 Rendez-vous sur la page <strong>Services</strong> pour contacter un prestataire
+                      💡 Rendez-vous sur la page <strong>Services</strong> ou sur le profil d'un <strong>Refuge</strong> pour démarrer une discussion
                     </p>
                   )}
                 </div>

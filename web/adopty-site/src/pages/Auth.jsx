@@ -51,7 +51,7 @@ const Auth = () => {
   const [nomRefuge, setNomRefuge] = useState('')
   const [siret, setSiret] = useState('')
   const [capacite, setCapacite] = useState('')
-  const [nomEntreprise, setNomEntreprise] = useState('')
+  const [experience, setExperience] = useState('')
   const [service, setService] = useState('')
   const [zone, setZone] = useState('')
 
@@ -63,7 +63,7 @@ const Auth = () => {
     setEmail(''); setPassword(''); setConfirmPassword('')
     setPrenom(''); setNom(''); setWilaya(''); setAdresse('')
     setNomRefuge(''); setSiret(''); setCapacite('')
-    setNomEntreprise(''); setService(''); setZone('')
+    setExperience(''); setService(''); setZone('')
     setPendingVerification(false); setVerificationCode('')
   }
 
@@ -158,7 +158,7 @@ const Auth = () => {
         const result = await bootstrapCurrentUtilisateur({
           prenom, nom, adresse, email, wilaya,
           role: role || 'utilisateur',
-          nomRefuge, siret, capacite, nomEntreprise, service, zone,
+          nomRefuge, siret, capacite, experience, service, zone,
           token,
         })
         console.log('✅ Bootstrap réussi — rôles:', result?.roles?.map(r => r.Nom || r.nom))
@@ -304,7 +304,10 @@ const Auth = () => {
                       <InputField label="Nom" value={nom} onChange={setNom} placeholder="Martin" required />
                     </div>
                     <InputField label="Wilaya" value={wilaya} onChange={setWilaya} placeholder="Ex: Alger, Oran, Constantine..." required />
-                    <InputField label="Adresse" value={adresse} onChange={setAdresse} placeholder="12 rue de la Forêt, 34000 Montpellier" required />
+                    <div>
+                      <InputField label="Adresse" value={adresse} onChange={setAdresse} placeholder="Ex: 12 rue de la Forêt, Alger" required />
+                      <p className="text-xs text-on-surface-variant mt-1">Format: Adresse, Ville (séparé par une virgule pour les refuges)</p>
+                    </div>
                     {error && <p className="text-error text-sm font-bold bg-error-container px-4 py-3 rounded-lg border border-error">{error}</p>}
                     <button type="submit" disabled={loading}
                       className="w-full py-4 bg-primary text-white font-['Plus_Jakarta_Sans'] font-extrabold text-sm uppercase tracking-widest border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all disabled:opacity-60">
@@ -356,7 +359,7 @@ const Auth = () => {
                     {role === 'prestataire' && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-3 pt-2 border-t-2 border-dashed border-secondary">
                         <p className="font-bold text-sm text-secondary uppercase tracking-wider">Informations prestataire</p>
-                        <InputField label="Nom / Entreprise" value={nomEntreprise} onChange={setNomEntreprise} placeholder="Sophie Martin Services" required />
+                        <InputField label="Expérience (années)" type="number" value={experience} onChange={setExperience} placeholder="Ex: 5" required />
                         <div>
                           <label className="block font-['Plus_Jakarta_Sans'] font-bold text-sm mb-1.5">Service proposé <span className="text-error">*</span></label>
                           <select value={service} onChange={e => setService(e.target.value)} required className={inputCls}>

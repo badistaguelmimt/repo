@@ -1,4 +1,5 @@
 import { db } from "../config/db.js";
+import { DemandeAdoption } from "../modeles/demande_adoption.model.js";
 
 // ── Créer une demande d'adoption ─────────────────────────────────────────────
 export const createDemandeAdoption = async (data) => {
@@ -109,4 +110,76 @@ export const demandeExisteDeja = async (idAnimal, idUtilisateur) => {
     [idAnimal, idUtilisateur]
   );
   return rows.length > 0;
+};
+
+// ── Toutes les demandes d'adoption (vue admin / liste globale) ───────────────
+export const getAllDemandeAdoptions = async () => {
+  const [rows] = await db.query("SELECT * FROM demande_adoption");
+  return rows.map(row => new DemandeAdoption(row));
+};
+
+// ── Une demande par ID — retourne un objet modèle ────────────────────────────
+export const getDemandeAdoptionById = async (id) => {
+  const [rows] = await db.query(
+    "SELECT * FROM demande_adoption WHERE Id = ?",
+    [id]
+  );
+  if (!rows[0]) return null;
+  return new DemandeAdoption(rows[0]);
+};
+
+// ── Demandes d'un refuge (liste simple sans JOIN) ────────────────────────────
+export const getDemandeAdoptionByRefugeId = async (id) => {
+  const [rows] = await db.query(
+    "SELECT * FROM demande_adoption WHERE IdRefuge = ?",
+    [id]
+  );
+  return rows.map(row => new DemandeAdoption(row));
+};
+
+// ── Demandes d'un utilisateur (liste simple sans JOIN) ───────────────────────
+export const getDemandeAdoptionByUtilisateurId = async (id) => {
+  const [rows] = await db.query(
+    "SELECT * FROM demande_adoption WHERE IdUtilisateur = ?",
+    [id]
+  );
+  return rows.map(row => new DemandeAdoption(row));
+};
+
+// ── Mise à jour complète d'une demande d'adoption ────────────────────────────
+export const updateDemandeAdoption = async (id, data) => {
+  const [result] = await db.query(
+    `UPDATE demande_adoption SET
+      IdAnimal = ?,
+      IdUtilisateur = ?,
+      IdRefuge = ?,
+      Statut = ?,
+      TypeLogement = ?,
+      Jardin = ?,
+      Animaux = ?,
+      Enfants = ?,
+      CommentaireDepart = ?,
+      Disponibilite = ?,
+      CommentaireRetour = ?,
+      DateDemande = ?,
+      DateRetours = ?
+     WHERE Id = ?`,
+    [
+      data.IdAnimal,
+      data.IdUtilisateur,
+      data.IdRefuge,
+      data.Statut,
+      data.TypeLogement,
+      data.Jardin ?? null,
+      data.Animaux ?? null,
+      data.Enfants ?? null,
+      data.CommentaireDepart,
+      data.Disponibilite ?? null,
+      data.CommentaireRetour ?? null,
+      data.DateDemande,
+      data.DateRetours ?? null,
+      id
+    ]
+  );
+  return result.affectedRows;
 };

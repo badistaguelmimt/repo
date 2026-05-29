@@ -222,10 +222,6 @@ const Profil = () => {
                         <p className="text-sm text-gray-500 font-medium mt-0.5">{refuge.adresse}</p>
                         <div className="flex flex-wrap gap-4 mt-3">
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-on-surface-variant">
-                            <span className="material-symbols-outlined text-sm">schedule</span>
-                            {refuge.horaires}
-                          </span>
-                          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-on-surface-variant">
                             <span className="material-symbols-outlined text-sm">phone</span>
                             {refuge.telephone}
                           </span>

@@ -35,25 +35,29 @@ export const mapProduits = (produits = []) => produits.map(mapProduit)
 
 // ── Helpers (ex-refugeMapper) ─────────────────────────────────────────────────
 
-export const mapRefuge = (refuge) => ({
-  id:             String(refuge.Id ?? refuge.id ?? ''),
-  idUtilisateur:  String(refuge.IdUtilisateur ?? refuge.idUtilisateur ?? ''), // nécessaire pour anti-réflexivité
-  nom:            refuge.Nom ?? refuge.nom ?? 'Refuge',
-  lieu:           refuge.Nom ?? refuge.lieu ?? 'Refuge',
-  ville:          refuge.Ville ?? refuge.ville ?? 'Ville inconnue',
-  codePostal:     refuge.codePostal ?? '',
-  adresse:        refuge.Addresse ?? refuge.adresse ?? 'Adresse inconnue',
-  telephone:      refuge.Telephone ?? refuge.telephone ?? 'N/A',
-  email:          refuge.email ?? 'contact@adopty.local',
-  horaires:       refuge.horaires ?? 'Horaires non renseignés',
-  description:    refuge.Description ?? refuge.description ?? 'Refuge partenaire Adopty.',
-  capacite:       refuge.capacite ?? 0,
-  surface:        refuge.surface ?? 'N/A',
-  bénévoles:      refuge['bénévoles'] ?? refuge.benevoles ?? 0,
-  animauxTotal:   refuge.animauxTotal ?? 0,
-  specialites:    refuge.specialites ?? [],
-  certifications: refuge.certifications ?? ['Refuge partenaire'],
-})
+export const mapRefuge = (refuge) => {
+  const rawAdresse = refuge.Addresse ?? refuge.adresse ?? 'Adresse inconnue';
+  const parts = rawAdresse.split(',');
+  const parsedVille = parts.length > 1 ? parts.pop().trim() : 'Ville inconnue';
+  const parsedAdresse = parts.length > 0 ? parts.join(',').trim() : rawAdresse;
+
+  return {
+    id:             String(refuge.Id ?? refuge.id ?? ''),
+    idUtilisateur:  String(refuge.IdUtilisateur ?? refuge.idUtilisateur ?? ''),
+    nom:            refuge.Nom ?? refuge.nom ?? 'Refuge',
+    lieu:           refuge.Nom ?? refuge.lieu ?? 'Refuge',
+    ville:          refuge.Ville ?? refuge.ville ?? parsedVille,
+    codePostal:     refuge.codePostal ?? '',
+    adresse:        parsedAdresse,
+    telephone:      refuge.Telephone ?? refuge.telephone ?? 'N/A',
+    email:          refuge.email ?? 'contact@adopty.local',
+    horaires:       refuge.horaires ?? 'Horaires non renseignés',
+    description:    refuge.Description ?? refuge.description ?? 'Refuge partenaire Adopty.',
+    animauxTotal:   refuge.animauxTotal ?? 0,
+    specialites:    refuge.specialites ?? [],
+    certifications: refuge.certifications ?? ['Refuge partenaire'],
+  }
+}
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
 

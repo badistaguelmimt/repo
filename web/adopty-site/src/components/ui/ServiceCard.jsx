@@ -68,15 +68,15 @@ const ServiceCard = ({ prestataire, delay = 0, onReserver }) => {
           ))}
         </div>
 
-        <div className="flex items-center justify-between border-t-2 border-black/10 pt-4 gap-2">
+        <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between border-t-2 border-black/10 pt-4 gap-3">
           <div>
             <span className="font-['Plus_Jakarta_Sans'] font-extrabold text-2xl text-primary">
               {Number(prestataire.prixHeure || 0).toLocaleString('fr-FR')} DZD
             </span>
-            <span className="text-sm text-on-surface-variant font-bold"> / heure</span>
+            <span className="text-sm text-on-surface-variant font-bold"> / h</span>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2 w-full xl:w-auto justify-start xl:justify-end">
             {/* Bouton Profil — toujours visible */}
             <Link
               to={`/prestataire/${prestataire.id}`}

@@ -54,3 +54,37 @@ export const createPrestataireStripeAccount = async ({ userId, email, name }) =>
         data: { email, name },
     });
 };
+
+// Paiement multi-vendeurs : répartit entre plusieurs comptes Connect
+export const createMultiVendorPayment = async ({ commandeId, userId, subOrders }) => {
+    return apiAuthRequest({
+        url: "/api/stripe/payment/multi-vendor",
+        method: "post",
+        data: { commandeId, userId, subOrders },
+    });
+};
+
+// Vérifie le statut d'un PaymentIntent après redirection de paiement
+export const getPaymentStatus = async (paymentIntentId) => {
+    return apiAuthRequest({
+        url: `/api/stripe/payment/status/${paymentIntentId}`,
+        method: "get",
+    });
+};
+
+// Récupère les infos d'un compte Stripe Connect (vérification onboarding)
+export const getConnectedAccount = async (accountId) => {
+    return apiAuthRequest({
+        url: `/api/stripe/connect/account/${accountId}`,
+        method: "get",
+    });
+};
+
+// Rafraîchit le lien d'onboarding Stripe Connect expiré
+export const refreshOnboardingLink = async ({ accountId, type, refugeId }) => {
+    return apiAuthRequest({
+        url: `/api/stripe/connect/refresh/${accountId}/${type}`,
+        method: "post",
+        data: { refugeId },
+    });
+};

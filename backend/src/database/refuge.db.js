@@ -19,15 +19,25 @@ export const CreateRefuge = async (refuge) => {
 }
 
 export const getAllRefuges = async () => {
-  const [rows] = await db.query("SELECT * FROM refuge");
+  const [rows] = await db.query(`
+    SELECT r.*, MAX(u.AddresseEmail) as email
+    FROM refuge r
+    LEFT JOIN refuge_utilisateur ru ON r.Id = ru.IdRefuge
+    LEFT JOIN utilisateur u ON ru.IdUtilisateur = u.Id
+    GROUP BY r.Id
+  `);
   return rows.map(row => new Refuge(row));
 };
 
 export const getRefugeById = async (id) => {
-  const [rows] = await db.query(
-    "SELECT * FROM refuge WHERE Id = ?",
-    [id]
-  );
+  const [rows] = await db.query(`
+    SELECT r.*, MAX(u.AddresseEmail) as email
+    FROM refuge r
+    LEFT JOIN refuge_utilisateur ru ON r.Id = ru.IdRefuge
+    LEFT JOIN utilisateur u ON ru.IdUtilisateur = u.Id
+    WHERE r.Id = ?
+    GROUP BY r.Id
+  `, [id]);
 
   if (!rows[0]) return null;
 

@@ -47,6 +47,7 @@ import message_readRoutes from "./routes/message_read.route.js";
 import materiauxRoutes from "./routes/materiaux.route.js";
 import caracteristiqueRoutes from "./routes/caracteristique.route.js";
 import demandeAdoptionRoutes from "./routes/demande_adoption.route.js";
+import demandeTransfertRoutes from "./routes/demande_transfert.route.js";
 import checkoutRoutes from "./routes/checkout.route.js";
 import stripeRoutes from "./routes/stripe.route.js";
 
@@ -116,6 +117,7 @@ app.use("/api/type_services", type_serviceRoutes);
 
 // Adoption
 app.use("/api/demandes-adoption", demandeAdoptionRoutes);
+app.use("/api/demandes-transfert", demandeTransfertRoutes);
 
 // Fonctionnalités sociales
 app.use("/api/aviss", avisRoutes);
