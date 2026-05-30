@@ -161,6 +161,14 @@ const RefugeDashboard = () => {
     setReponseLoading(true)
     try {
       await updateDemandeAdoptionStatut(reponseModal.demande.Id, statut, commentaireRetour)
+      
+      // Actualisation optimiste pour un retour UI immédiat
+      setMyAdoptions(prev => prev.map(d => 
+        d.Id === reponseModal.demande.Id 
+          ? { ...d, StatutLabel: statut, Statut: statut } 
+          : d
+      ))
+
       setReponseModal(null)
       setCommentaireRetour('')
       loadDashboardData()
@@ -354,7 +362,7 @@ const RefugeDashboard = () => {
           <table className="w-full text-sm">
             <thead className="bg-surface-container border-b-2 border-black">
               <tr>
-                {['Nom', 'Espèce', 'Âge', 'Urgence', 'Actions'].map((h) => (
+                {['Nom', 'Race', 'Couleur', 'Âge', 'Urgence', 'Actions'].map((h) => (
                   <th key={h} className="px-5 py-3 text-left font-['Plus_Jakarta_Sans'] font-extrabold text-xs uppercase tracking-wider text-on-surface-variant">{h}</th>
                 ))}
               </tr>
@@ -374,7 +382,8 @@ const RefugeDashboard = () => {
                 myAnimals.map((animal, idx) => (
                   <tr key={animal.id ? `animal-${animal.id}` : `animal-idx-${idx}`} className="hover:bg-surface-container transition-colors">
                     <td className="px-5 py-4 font-bold">{animal.nom}</td>
-                    <td className="px-5 py-4 text-on-surface-variant">{animal.espece}</td>
+                    <td className="px-5 py-4 text-on-surface-variant">{animal.race || '—'}</td>
+                    <td className="px-5 py-4 text-on-surface-variant">{animal.Couleur || '—'}</td>
                     <td className="px-5 py-4 text-on-surface-variant">{animal.ageLabel}</td>
                     <td className="px-5 py-4">
                       <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold border border-black ${animal.urgent ? 'bg-error-container text-on-error-container' : 'bg-primary-fixed text-on-primary-fixed-variant'}`}>

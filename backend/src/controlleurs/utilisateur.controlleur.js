@@ -93,8 +93,17 @@ export async function updateAccountControlleur(req, res) {
         if (!utilisateur) return res.status(404).json({ message: "Utilisateur non trouvé" });
 
         await updateUtilisateur(id, {
-            Nom, Prenom, Addresse, AddresseEmail, Wilaya, MotDePasse,
-            Photo, ModifieePar, stripeAccountStatus, stripeAccountId,
+            Nom:                Nom                ?? utilisateur.Nom,
+            Prenom:             Prenom             ?? utilisateur.Prenom,
+            Addresse:           Addresse           ?? utilisateur.Addresse,
+            AddresseEmail:      AddresseEmail      ?? utilisateur.AddresseEmail,
+            // Ne pas écraser le mot de passe si non fourni
+            MotDePasse:         MotDePasse         || utilisateur.MotDePasse,
+            Wilaya:             Wilaya             ?? utilisateur.Wilaya,
+            Photo:              Photo              ?? utilisateur.Photo,
+            ModifieePar:        ModifieePar        ?? utilisateur.Id,
+            stripeAccountStatus: stripeAccountStatus ?? utilisateur.stripeAccountStatus,
+            stripeAccountId:    stripeAccountId    ?? utilisateur.stripeAccountId,
         });
 
         res.status(200).json({ message: "Utilisateur modifié avec succès" });
@@ -198,26 +207,33 @@ export async function bootstrapCurrentUtilisateurControlleur(req, res) {
             });
             utilisateur = await getUtilisateurById(createdId);
         } else {
-            await updateUtilisateur(utilisateur.Id, {
-                Nom: providedNom || utilisateur.Nom,
-                Prenom: providedPrenom || utilisateur.Prenom,
-                Addresse: providedAdresse || utilisateur.Addresse,
-                AddresseEmail: finalEmail || utilisateur.AddresseEmail,
-                MotDePasse: utilisateur.MotDePasse,
-                Wilaya: (providedWilaya || utilisateur.Wilaya || "").substring(0, 15),
-                Photo: utilisateur.Photo,
-                ModifieePar: utilisateur.Id,
-                stripeAccountStatus: utilisateur.stripeAccountStatus || null,
-                stripeAccountId: utilisateur.stripeAccountId,
-            });
-            utilisateur = await getUtilisateurById(utilisateur.Id);
+            // N'update que si des données ont été fournies dans le body
+            const hasUpdates = providedNom || providedPrenom || providedAdresse || providedEmail || providedWilaya;
+            if (hasUpdates) {
+                await updateUtilisateur(utilisateur.Id, {
+                    Nom: providedNom || utilisateur.Nom,
+                    Prenom: providedPrenom || utilisateur.Prenom,
+                    Addresse: providedAdresse || utilisateur.Addresse,
+                    AddresseEmail: finalEmail || utilisateur.AddresseEmail,
+                    MotDePasse: utilisateur.MotDePasse,
+                    Wilaya: (providedWilaya || utilisateur.Wilaya || '').substring(0, 15),
+                    Photo: utilisateur.Photo,
+                    ModifieePar: utilisateur.Id,
+                    stripeAccountStatus: utilisateur.stripeAccountStatus || null,
+                    stripeAccountId: utilisateur.stripeAccountId,
+                });
+                utilisateur = await getUtilisateurById(utilisateur.Id);
+            }
         }
 
         // Synchronisation des rôles (idempotent — IGNORE si déjà présent)
-        for (const roleName of new Set(roleNames)) {
-            const role = await ensureRoleByName(roleName);
-            if (role?.Id) await ensureRoleToUtilisateurByIds(role.Id, utilisateur.Id);
-        }
+        // Parallélisé pour éviter N allers-retours DB séquentiels
+        await Promise.all(
+            Array.from(new Set(roleNames)).map(async (roleName) => {
+                const role = await ensureRoleByName(roleName);
+                if (role?.Id) await ensureRoleToUtilisateurByIds(role.Id, utilisateur.Id);
+            })
+        );
 
         // Création du profil étendu selon le rôle demandé
         if (requestedRole === "Prestataire") {

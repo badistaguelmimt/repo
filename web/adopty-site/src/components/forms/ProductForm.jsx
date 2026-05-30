@@ -31,11 +31,21 @@ const ProductForm = ({ initialData = null, refugeId, onClose, onSuccess }) => {
     setIsLoading(true)
     setError(null)
 
+    // Normaliser les types numériques avant envoi (les inputs HTML retournent des strings)
+    const payload = {
+      ...formData,
+      Prix: parseFloat(formData.Prix) || 0,
+      Stock: parseInt(formData.Stock, 10) || 0,
+      Reduction: parseFloat(formData.Reduction) || 0,
+      Disponibilite: Boolean(formData.Disponibilite),
+      IdRefuge: Number(formData.IdRefuge),
+    }
+
     try {
       if (productId) {
-        await updateProduit(productId, formData)
+        await updateProduit(productId, payload)
       } else {
-        await createProduit(formData)
+        await createProduit(payload)
       }
       onSuccess()
       onClose()

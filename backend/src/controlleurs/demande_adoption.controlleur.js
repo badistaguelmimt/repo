@@ -142,12 +142,16 @@ export const deleteDemande = async (req, res) => {
     const demande = await getDemandeById(req.params.id);
     if (!demande) return res.status(404).json({ message: "Demande introuvable." });
 
-    if (demande.IdUtilisateur !== req.user.Id) {
+    // Comparaison numérique explicite pour éviter les erreurs de type (int SQL vs objet model)
+    if (Number(demande.IdUtilisateur) !== Number(req.user.Id)) {
       return res.status(403).json({ message: "Vous ne pouvez annuler que vos propres demandes." });
     }
 
-    await deleteDemandeAdoption(req.params.id);
-    return res.status(200).json({ message: "Demande annulée." });
+    // Accepte un Id numérique ou un label textuel
+    const statutId = await resolveStatut("Annulé");
+    await db.query("UPDATE demande_adoption SET Statut = ? WHERE Id = ?", [statutId, req.params.id]);
+
+    return res.status(200).json({ message: "Demande annulée avec succès." });
   } catch (error) {
     console.error("Erreur deleteDemande:", error);
     return res.status(500).json({ message: "Erreur interne du serveur." });

@@ -80,20 +80,20 @@ export async function createAnimalControlleur(req, res) {
         const dbTaille = isNaN(Poids) ? 50 : parseFloat(Taille) || 50;
 
         const newId = await createAnimal({
-            Nom,
-            Prenom: Prenom || Nom,
+            Nom:               String(Nom || '').substring(0, 30),
+            Prenom:            String(Prenom || Nom || '').substring(0, 1024),
             Age,
-            Genre: dbGenre,
-            Poids: isNaN(Poids) ? 0 : Poids,
-            Taille: dbTaille,
-            Couleur,
-            EtatSantee,
-            Sterilise: dbSterilise,
-            Temperament,
-            NiveauEnergetique,
-            SociableEnfant: dbSociableEnfant,
-            SociableAnimaux: dbSociableAnimaux,
-            Statut: isNaN(Statut) ? 1 : Statut,
+            Genre:             dbGenre,
+            Poids:             isNaN(Poids) ? 0 : Poids,
+            Taille:            dbTaille,
+            Couleur:           String(Couleur || '').substring(0, 15),
+            EtatSantee:        String(EtatSantee || 'Bon').substring(0, 15),
+            Sterilise:         dbSterilise,
+            Temperament:       String(Temperament || '').substring(0, 300),
+            NiveauEnergetique: String(NiveauEnergetique || 'Moyen').substring(0, 15),
+            SociableEnfant:    dbSociableEnfant,
+            SociableAnimaux:   dbSociableAnimaux,
+            Statut:            isNaN(Statut) ? 1 : Statut,
             Race,
         });
 
@@ -113,10 +113,14 @@ export async function deleteAnimalControlleur(req, res) {
         const animalData = await getAnimalById(id);
         if (!animalData) return res.status(404).json({ message: "Animal non trouvé" });
 
-        const animalRefuge = await getAnimalRefuge(id);
-        const userRefuges = await getUtilisateurRefugesById(req.user.Id);
-        if (!userRefuges.some((r) => r.Id === animalRefuge?.Id)) {
-            return res.status(403).json({ message: "Vous n'êtes pas autorisé à supprimer cet animal." });
+        // Les admins peuvent supprimer n'importe quel animal
+        const isAdmin = req.user.Roles?.some(r => r.Intitule === 'Admin') ?? false;
+        if (!isAdmin) {
+            const animalRefuge = await getAnimalRefuge(id);
+            const userRefuges = await getUtilisateurRefugesById(req.user.Id);
+            if (!userRefuges.some((r) => r.Id === animalRefuge?.Id)) {
+                return res.status(403).json({ message: "Vous n'êtes pas autorisé à supprimer cet animal." });
+            }
         }
 
         await deleteAnimal(id);
@@ -144,10 +148,14 @@ export async function updateAnimalControlleur(req, res) {
         const animal = await getAnimalById(id);
         if (!animal) return res.status(404).json({ message: "Animal non trouvé" });
 
-        const animalRefuge = await getAnimalRefuge(id);
-        const userRefuges = await getUtilisateurRefugesById(req.user.Id);
-        if (!userRefuges.some((r) => r.Id === animalRefuge?.Id)) {
-            return res.status(403).json({ message: "Vous n'êtes pas autorisé à modifier cet animal." });
+        // Les admins peuvent modifier n'importe quel animal
+        const isAdmin = req.user.Roles?.some(r => r.Intitule === 'Admin') ?? false;
+        if (!isAdmin) {
+            const animalRefuge = await getAnimalRefuge(id);
+            const userRefuges = await getUtilisateurRefugesById(req.user.Id);
+            if (!userRefuges.some((r) => r.Id === animalRefuge?.Id)) {
+                return res.status(403).json({ message: "Vous n'êtes pas autorisé à modifier cet animal." });
+            }
         }
 
         const dbGenre = normalizeGenre(Genre);
@@ -157,21 +165,21 @@ export async function updateAnimalControlleur(req, res) {
         const dbTaille = Taille && !isNaN(parseFloat(Taille)) ? parseFloat(Taille) : undefined;
 
         await updateAnimal(id, {
-            Nom: Nom || animal.Nom,
-            Prenom: Prenom || animal.Prenom,
-            Age: isNaN(Age) ? animal.Age : Age,
-            Genre: dbGenre || animal.Genre,
-            Poids: isNaN(Poids) ? animal.Poids : Poids,
-            Taille: dbTaille !== undefined ? dbTaille : animal.Taille,
-            Couleur: Couleur || animal.Couleur,
-            EtatSantee: EtatSantee || animal.EtatSantee,
-            Sterilise: dbSterilise || animal.Sterilise,
-            Temperament: Temperament || animal.Temperament,
-            NiveauEnergetique: NiveauEnergetique || animal.NiveauEnergetique,
-            SociableEnfant: dbSociableEnfant || animal.SociableEnfant,
-            SociableAnimaux: dbSociableAnimaux || animal.SociableAnimaux,
-            Statut: isNaN(Statut) ? animal.Statut : Statut,
-            Race: isNaN(Race) ? animal.Race : Race,
+            Nom:               String(Nom || animal.Nom || '').substring(0, 30),
+            Prenom:            String(Prenom || animal.Prenom || '').substring(0, 1024),
+            Age:               isNaN(Age) ? animal.Age : Age,
+            Genre:             dbGenre || animal.Genre,
+            Poids:             isNaN(Poids) ? animal.Poids : Poids,
+            Taille:            dbTaille !== undefined ? dbTaille : animal.Taille,
+            Couleur:           String(Couleur || animal.Couleur || '').substring(0, 15),
+            EtatSantee:        String(EtatSantee || animal.EtatSantee || 'Bon').substring(0, 15),
+            Sterilise:         dbSterilise || animal.Sterilise,
+            Temperament:       String(Temperament || animal.Temperament || '').substring(0, 300),
+            NiveauEnergetique: String(NiveauEnergetique || animal.NiveauEnergetique || 'Moyen').substring(0, 15),
+            SociableEnfant:    dbSociableEnfant || animal.SociableEnfant,
+            SociableAnimaux:   dbSociableAnimaux || animal.SociableAnimaux,
+            Statut:            isNaN(Statut) ? animal.Statut : Statut,
+            Race:              isNaN(Race) ? animal.Race : Race,
         });
 
         res.status(200).json({ message: "Animal modifié avec succès" });

@@ -25,6 +25,7 @@ const ProfilPrestataire = lazy(() => import('./pages/ProfilPrestataire'))
 const RefugeProfile    = lazy(() => import('./pages/RefugeProfile'))
 const ProductDetail     = lazy(() => import('./pages/ProductDetail'))
 const Messages          = lazy(() => import('./pages/Messages'))
+const SsoCallback       = lazy(() => import('./pages/SsoCallback'))
 
 const PageLoader = () => (
   <div className="fixed inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm z-[100] animate-in fade-in duration-200">
@@ -72,6 +73,7 @@ function App() {
           <Route path="/refuge/:id" element={<RefugeProfile />} />
           <Route path="/prestataire/:id" element={<ProfilPrestataire />} />
           <Route path="/messages" element={<Messages />} />
+          <Route path="/sso-callback" element={<SsoCallback />} />
         </Routes>
       </Suspense>
     </Layout>

@@ -13,6 +13,7 @@ export const bootstrapCurrentUtilisateur = async (payload = {}) => {
         url: endpoints.utilisateurBootstrap,
         method: "post",
         data: payload,
+        timeout: 30000, // Bootstrap peut être lent (cold start TiDB + plusieurs opérations DB)
     };
 
     // Si un token est fourni explicitement, on court-circuite l'intercepteur automatique
@@ -26,6 +27,32 @@ export const bootstrapCurrentUtilisateur = async (payload = {}) => {
 
 export const getUtilisateurAnimaux = async (utilisateurId) => {
     return apiAuthRequest(endpoints.utilisateurAnimaux(utilisateurId));
+};
+
+export const updateUtilisateurProfil = async (utilisateurId, data) => {
+    return apiAuthRequest({
+        url: endpoints.utilisateurById(utilisateurId),
+        method: 'put',
+        data,
+    });
+};
+
+export const getMesAnimauxPersonnels = async (utilisateurId) => {
+    return apiAuthRequest(endpoints.utilisateurAnimaux(utilisateurId));
+};
+
+export const addAnimalPersonnel = async (utilisateurId, animalId) => {
+    return apiAuthRequest({
+        url: `/api/utilisateurs/animal/${utilisateurId}/${animalId}`,
+        method: 'post',
+    });
+};
+
+export const removeAnimalPersonnel = async (utilisateurId, animalId) => {
+    return apiAuthRequest({
+        url: `/api/utilisateurs/animal/${utilisateurId}/${animalId}`,
+        method: 'delete',
+    });
 };
 
 export const getUtilisateurRefuges = async (utilisateurId) => {

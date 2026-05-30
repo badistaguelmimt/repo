@@ -22,10 +22,12 @@ router.get("/clerk/:id", protectRoute, utilisateur.getUtilisateurByClerkIdContro
 router.get("/:id", protectRoute, isOwnerOrAdmin, utilisateur.getAccountControlleur);
 
 // Routes protégées - gestion des animaux de l'utilisateur
-router.put("/animal/unset/:id", protectRoute, utilisateur.unsetAnimalToUtilisateurByIdsControlleur);
-router.put("/animal/set/:id", protectRoute, utilisateur.setAnimalToUtilisateurByIdsControlleur);
-router.delete("/animal/:id", protectRoute, utilisateur.removeAnimalFromUtilisateurByIdsControlleur);
-router.post("/animal/:id", protectRoute, utilisateur.addAnimalToUtilisateurByIdsControlleur);
+// GET    /animaux/:utilisateurId         → liste les animaux de l'utilisateur
+// POST   /animal/:utilisateurId/:animalId → ajoute un animal à l'utilisateur
+// DELETE /animal/:utilisateurId/:animalId → retire un animal de l'utilisateur
+router.get("/animaux/:id", protectRoute, isOwnerOrAdmin, utilisateur.getUtilisateurAnimalsByIdControlleur);
+router.post("/animal/:utilisateurId/:animalId", protectRoute, utilisateur.addAnimalToUtilisateurByIdsControlleur);
+router.delete("/animal/:utilisateurId/:animalId", protectRoute, utilisateur.removeAnimalFromUtilisateurByIdsControlleur);
 
 // Routes protégées - gestion des refuges de l'utilisateur
 router.delete("/refuge/:id", protectRoute, utilisateur.removeRefugeToUtilisateurByIdsControlleur);

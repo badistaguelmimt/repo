@@ -18,9 +18,12 @@ export const endpoints = {
 
     utilisateurBootstrap: "/api/utilisateurs/bootstrap",
     utilisateurByClerkId: (clerkId) => `/api/utilisateurs/clerk/${clerkId}`,
+    utilisateurById: (id) => `/api/utilisateurs/${id}`,
     utilisateurAnimaux: (id) => `/api/utilisateurs/animaux/${id}`,
     utilisateurRefuges: (id) => `/api/utilisateurs/refuges/${id}`,
     utilisateurRoles: (id) => `/api/utilisateurs/roles/${id}`,
+    utilisateurAddAnimal: (userId, animalId) => `/api/utilisateurs/animal/${userId}?animalId=${animalId}`,
+    utilisateurRemoveAnimal: (userId, animalId) => `/api/utilisateurs/animal/${userId}?animalId=${animalId}`,
 
     commandes: "/api/commandes",
     reservations: "/api/reservations",

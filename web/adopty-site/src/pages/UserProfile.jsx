@@ -1,17 +1,20 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useUser, useClerk, useAuth, SignedIn, SignedOut } from '@clerk/clerk-react'
 import { PageTransition, FadeIn } from '../components/Animations'
-import { getMyReservations, getMesDemandesAdoption, annulerDemandeAdoption, getMesCommandes, cancelReservation } from '../services/authApi'
+import { getMyReservations, getMesDemandesAdoption, annulerDemandeAdoption, getMesCommandes, cancelReservation, updateUtilisateurProfil, getMesAnimauxPersonnels, addAnimalPersonnel, removeAnimalPersonnel } from '../services/authApi'
+import { getAnimaux } from '../services/publicApi'
 import { useCurrentUser } from '../hooks/useCurrentUser'
 import { normalizeApiError } from '../lib/http'
 import { useRoleAccess, ROLE_KEYS } from '../hooks/useRoleAccess'
+import Modal from '../components/ui/Modal'
 
 const NAV_ITEMS = [
   { id: 'profil',      label: 'Mon Profil',        icon: 'person' },
+  { id: 'animaux',    label: 'Mes Animaux',        icon: 'pets' },
   { id: 'commandes',  label: 'Mes Commandes',      icon: 'receipt_long' },
   { id: 'reservations', label: 'Mes Réservations', icon: 'event' },
-  { id: 'adoptions',  label: 'Mes Adoptions',      icon: 'pets' },
+  { id: 'adoptions',  label: 'Mes Adoptions',      icon: 'favorite' },
 ]
 
 const StatutBadge = ({ statut }) => {
@@ -54,7 +57,20 @@ const UserProfile = () => {
   const [commandes,     setCommandes]     = useState([])
   const [isLoading,     setIsLoading]     = useState(true)
 
-  // Profil backend via hook (ex-mapUtilisateur)
+  // Edition profil
+  const [editMode,      setEditMode]      = useState(false)
+  const [editForm,      setEditForm]      = useState({})
+  const [editLoading,   setEditLoading]   = useState(false)
+  const [editSuccess,   setEditSuccess]   = useState(false)
+  const [editError,     setEditError]     = useState(null)
+
+  // Animaux personnels
+  const [mesAnimaux,       setMesAnimaux]       = useState([])
+  const [animauxDispo,     setAnimauxDispo]     = useState([])
+  const [showAddAnimal,    setShowAddAnimal]    = useState(false)
+  const [searchAnimal,     setSearchAnimal]     = useState('')
+  const [animauxLoading,   setAnimauxLoading]   = useState(false)
+
   const { user: backendProfile } = useCurrentUser()
 
   const roleMeta = role === ROLE_KEYS.ADMIN
@@ -65,21 +81,97 @@ const UserProfile = () => {
         ? { icon: 'handshake', label: 'Prestataire', color: 'bg-tertiary text-white' }
         : { icon: 'person', label: 'Utilisateur', color: 'bg-primary-fixed text-on-primary-fixed-variant' }
 
+  // Charge les animaux personnels de l'utilisateur
+  const loadMesAnimaux = useCallback(async () => {
+    if (!backendProfile?.id) return
+    setAnimauxLoading(true)
+    try {
+      const data = await getMesAnimauxPersonnels(backendProfile.id).catch(() => [])
+      setMesAnimaux(Array.isArray(data) ? data : [])
+    } finally {
+      setAnimauxLoading(false)
+    }
+  }, [backendProfile?.id])
+
+  useEffect(() => {
+    if (backendProfile?.id) {
+      loadMesAnimaux()
+      // Pré-remplir le formulaire d'édition
+      setEditForm({
+        Nom: backendProfile.nom || '',
+        Prenom: backendProfile.prenom || '',
+        AddresseEmail: backendProfile.email || '',
+        Addresse: backendProfile.adresse || '',
+        Wilaya: backendProfile.wilaya || '',
+        MotDePasse: '',
+      })
+    }
+  }, [backendProfile?.id, loadMesAnimaux])
+
+  // Charge tous les animaux disponibles pour l'ajout (catalogue)
+  useEffect(() => {
+    if (showAddAnimal && animauxDispo.length === 0) {
+      getAnimaux().then(data => setAnimauxDispo(Array.isArray(data) ? data : [])).catch(() => {})
+    }
+  }, [showAddAnimal])
+
+  const handleSaveProfil = async (e) => {
+    e.preventDefault()
+    if (!backendProfile?.id) return
+    setEditLoading(true)
+    setEditError(null)
+    try {
+      await updateUtilisateurProfil(backendProfile.id, {
+        Nom: editForm.Nom,
+        Prenom: editForm.Prenom,
+        AddresseEmail: editForm.AddresseEmail,
+        Addresse: editForm.Addresse,
+        Wilaya: (editForm.Wilaya || '').substring(0, 15),
+        MotDePasse: editForm.MotDePasse || undefined,
+        ModifieePar: backendProfile.id,
+      })
+      setEditSuccess(true)
+      setEditMode(false)
+      setTimeout(() => setEditSuccess(false), 3000)
+    } catch (err) {
+      setEditError(err?.response?.data?.message || "Erreur lors de la mise à jour")
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  const handleAddAnimal = async (animal) => {
+    if (!backendProfile?.id) return
+    try {
+      await addAnimalPersonnel(backendProfile.id, animal.Id ?? animal.id)
+      await loadMesAnimaux()
+      setShowAddAnimal(false)
+    } catch (err) {
+      alert(err?.response?.data?.message || 'Erreur lors de l\'ajout')
+    }
+  }
+
+  const handleRemoveAnimal = async (animalId) => {
+    if (!backendProfile?.id) return
+    if (!window.confirm('Retirer cet animal de votre profil ?')) return
+    try {
+      await removeAnimalPersonnel(backendProfile.id, animalId)
+      setMesAnimaux(prev => prev.filter(a => (a.Id ?? a.id) !== animalId))
+    } catch (err) {
+      alert('Erreur lors du retrait')
+    }
+  }
+
   useEffect(() => {
     const loadProfile = async () => {
       if (!userId) return
       setIsLoading(true)
       try {
-        // Adoptions depuis le vrai endpoint demande_adoption
         const adoptionsData = await getMesDemandesAdoption().catch(() => [])
         setAdoptions(Array.isArray(adoptionsData) ? adoptionsData : [])
-
-        // Réservations de services (endpoint réservations classiques)
         const reservationsData = await getMyReservations().catch(() => [])
         const allReservations = Array.isArray(reservationsData) ? reservationsData : []
         setReservations(allReservations.filter(r => r.IdProfil && !r.IdAnimal))
-
-        // Commandes boutique
         const commandesData = await getMesCommandes().catch(() => [])
         setCommandes(Array.isArray(commandesData) ? commandesData : [])
       } catch (error) {
@@ -219,38 +311,200 @@ const UserProfile = () => {
 
               {/* SECTION PROFIL */}
               {activeSection === 'profil' && (
-                <FadeIn className="bg-surface-container-lowest border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-xl overflow-hidden">
-                  <div className="bg-surface-container border-b-4 border-black px-6 py-4">
-                    <h2 className="font-['Plus_Jakarta_Sans'] font-extrabold text-primary flex items-center gap-2">
-                      <span className="material-symbols-outlined">person</span>
-                      Informations personnelles
-                    </h2>
-                  </div>
-                  <div className="p-6 space-y-0 divide-y divide-outline-variant">
-                    {[
-                      { label: 'Prénom', value: backendProfile?.prenom || user?.firstName, icon: 'badge' },
-                      { label: 'Nom', value: backendProfile?.nom || user?.lastName, icon: 'badge' },
-                      { label: 'Email', value: backendProfile?.email || user?.primaryEmailAddress?.emailAddress, icon: 'mail' },
-                      { label: 'Wilaya', value: backendProfile?.wilaya, icon: 'location_on' },
-                      { label: 'Adresse', value: backendProfile?.adresse, icon: 'home' },
-                    ].map(({ label, value, icon }) => (
-                      <div key={label} className="flex items-center justify-between gap-4 py-4">
-                        <div className="flex items-center gap-3 text-on-surface-variant">
-                          <span className="material-symbols-outlined text-base">{icon}</span>
-                          <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
-                        </div>
-                        <span className="font-bold text-sm text-right">{value || <span className="text-on-surface-variant font-normal italic">Non renseigné</span>}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="px-6 pb-6">
-                    <div className="bg-secondary-fixed border-2 border-black rounded-xl p-4 flex items-center gap-3">
-                      <span className="material-symbols-outlined text-secondary">info</span>
-                      <p className="text-sm text-on-surface-variant">
-                        Pour modifier vos informations, contactez l'administrateur ou mettez à jour votre profil Clerk.
-                      </p>
+                <FadeIn className="space-y-5">
+                  {editSuccess && (
+                    <div className="flex items-center gap-3 px-4 py-3 bg-primary-fixed border-2 border-black rounded-xl font-bold text-sm text-on-primary-fixed-variant">
+                      <span className="material-symbols-outlined text-primary">check_circle</span>
+                      Profil mis à jour avec succès !
                     </div>
+                  )}
+                  <div className="bg-surface-container-lowest border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-xl overflow-hidden">
+                    <div className="bg-surface-container border-b-4 border-black px-6 py-4 flex items-center justify-between">
+                      <h2 className="font-['Plus_Jakarta_Sans'] font-extrabold text-primary flex items-center gap-2">
+                        <span className="material-symbols-outlined">person</span>
+                        Informations personnelles
+                      </h2>
+                      {!editMode && (
+                        <button onClick={() => setEditMode(true)}
+                          className="flex items-center gap-2 px-4 py-2 bg-primary text-white border-2 border-black font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all rounded-lg">
+                          <span className="material-symbols-outlined text-base">edit</span>
+                          Modifier
+                        </button>
+                      )}
+                    </div>
+
+                    {!editMode ? (
+                      <div className="p-6 divide-y divide-outline-variant">
+                        {[
+                          { label: 'Prénom',  value: backendProfile?.prenom || user?.firstName, icon: 'badge' },
+                          { label: 'Nom',     value: backendProfile?.nom    || user?.lastName,  icon: 'badge' },
+                          { label: 'Email',   value: backendProfile?.email  || user?.primaryEmailAddress?.emailAddress, icon: 'mail' },
+                          { label: 'Wilaya',  value: backendProfile?.wilaya,  icon: 'location_on' },
+                          { label: 'Adresse', value: backendProfile?.adresse, icon: 'home' },
+                        ].map(({ label, value, icon }) => (
+                          <div key={label} className="flex items-center justify-between gap-4 py-4">
+                            <div className="flex items-center gap-3 text-on-surface-variant">
+                              <span className="material-symbols-outlined text-base">{icon}</span>
+                              <span className="text-xs font-bold uppercase tracking-wider">{label}</span>
+                            </div>
+                            <span className="font-bold text-sm text-right">{value || <span className="text-on-surface-variant font-normal italic">Non renseigné</span>}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <form onSubmit={handleSaveProfil} className="p-6 space-y-4">
+                        {editError && (
+                          <div className="p-3 bg-error-container border-2 border-black rounded-lg text-sm font-bold text-on-error-container flex items-center gap-2">
+                            <span className="material-symbols-outlined text-base">error</span>{editError}
+                          </div>
+                        )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {[{ name: 'Prenom', label: 'Prénom', type: 'text' }, { name: 'Nom', label: 'Nom', type: 'text' }].map(f => (
+                            <div key={f.name} className="space-y-1.5">
+                              <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{f.label}</label>
+                              <input type={f.type} value={editForm[f.name] || ''}
+                                onChange={e => setEditForm(p => ({ ...p, [f.name]: e.target.value }))}
+                                className="w-full border-2 border-black rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                            </div>
+                          ))}
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Email</label>
+                          <input type="email" value={editForm.AddresseEmail || ''}
+                            onChange={e => setEditForm(p => ({ ...p, AddresseEmail: e.target.value }))}
+                            className="w-full border-2 border-black rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Adresse</label>
+                            <input type="text" value={editForm.Addresse || ''}
+                              onChange={e => setEditForm(p => ({ ...p, Addresse: e.target.value }))}
+                              className="w-full border-2 border-black rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Wilaya</label>
+                            <input type="text" maxLength={15} value={editForm.Wilaya || ''}
+                              onChange={e => setEditForm(p => ({ ...p, Wilaya: e.target.value }))}
+                              className="w-full border-2 border-black rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Nouveau mot de passe <span className="font-normal normal-case">(laisser vide pour ne pas changer)</span></label>
+                          <input type="password" value={editForm.MotDePasse || ''} autoComplete="new-password"
+                            onChange={e => setEditForm(p => ({ ...p, MotDePasse: e.target.value }))}
+                            placeholder="••••••••"
+                            className="w-full border-2 border-black rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                        </div>
+                        <div className="flex gap-3 pt-1">
+                          <button type="button" onClick={() => setEditMode(false)}
+                            className="flex-1 py-3 border-2 border-black font-bold text-sm rounded-lg hover:bg-surface-container transition-colors">
+                            Annuler
+                          </button>
+                          <button type="submit" disabled={editLoading}
+                            className="flex-1 py-3 bg-primary text-white font-extrabold text-sm border-2 border-black rounded-lg shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all disabled:opacity-50">
+                            {editLoading ? 'Enregistrement...' : 'Sauvegarder'}
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
+                </FadeIn>
+              )}
+
+              {/* SECTION MES ANIMAUX PERSONNELS */}
+              {activeSection === 'animaux' && (
+                <FadeIn className="bg-surface-container-lowest border-4 border-black shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] rounded-xl overflow-hidden">
+                  <div className="bg-surface-container border-b-4 border-black px-6 py-4 flex items-center justify-between">
+                    <div>
+                      <h2 className="font-['Plus_Jakarta_Sans'] font-extrabold text-primary flex items-center gap-2">
+                        <span className="material-symbols-outlined">pets</span>
+                        Mes animaux à la maison
+                      </h2>
+                      <p className="text-xs text-on-surface-variant mt-0.5">Ces animaux sont pré-sélectionnés lors de vos réservations de services.</p>
+                    </div>
+                    <button onClick={() => setShowAddAnimal(true)}
+                      className="flex items-center gap-2 px-4 py-2 bg-primary text-white border-2 border-black font-bold text-sm shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all rounded-lg">
+                      <span className="material-symbols-outlined text-base">add</span>
+                      Ajouter
+                    </button>
+                  </div>
+                  <div className="p-6">
+                    {animauxLoading ? (
+                      <div className="py-10 flex justify-center"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" /></div>
+                    ) : mesAnimaux.length === 0 ? (
+                      <div className="py-12 flex flex-col items-center gap-4 text-center text-on-surface-variant">
+                        <span className="material-symbols-outlined text-6xl opacity-25">pets</span>
+                        <p className="font-bold">Aucun animal enregistré.</p>
+                        <p className="text-sm">Ajoutez vos animaux pour simplifier vos réservations de services.</p>
+                        <button onClick={() => setShowAddAnimal(true)}
+                          className="px-5 py-2.5 bg-primary text-white font-bold border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all text-sm rounded-lg">
+                          + Ajouter mon premier animal
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {mesAnimaux.map((a, idx) => (
+                          <div key={a.Id ?? a.id ?? idx} className="flex items-center gap-4 p-4 bg-white border-2 border-black rounded-xl shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] transition-all">
+                            <div className="w-12 h-12 rounded-full bg-primary-fixed border-2 border-black flex items-center justify-center flex-shrink-0">
+                              <span className="material-symbols-outlined text-primary text-xl">pets</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-extrabold text-sm truncate">{a.Nom ?? a.nom ?? 'Animal'}</p>
+                              <p className="text-xs text-on-surface-variant">{a.EspeceNom ?? a.espece ?? ''}{a.RaceNom ? ` · ${a.RaceNom}` : ''}</p>
+                              <p className="text-xs text-on-surface-variant">{a.Age != null ? `${a.Age} an${a.Age > 1 ? 's' : ''}` : ''}</p>
+                            </div>
+                            <button onClick={() => handleRemoveAnimal(a.Id ?? a.id)}
+                              className="p-2 border border-black hover:bg-error-container text-error rounded-lg transition-colors" title="Retirer">
+                              <span className="material-symbols-outlined text-base">close</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Modal recherche & ajout animal */}
+                  <Modal isOpen={showAddAnimal} onClose={() => { setShowAddAnimal(false); setSearchAnimal('') }} title="Ajouter un animal" size="md">
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant text-base">search</span>
+                        <input type="text" placeholder="Rechercher par nom, race, espèce..."
+                          value={searchAnimal} onChange={e => setSearchAnimal(e.target.value)}
+                          className="w-full pl-9 pr-4 py-2.5 border-2 border-black rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                      </div>
+                      <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
+                        {animauxDispo
+                          .filter(a => {
+                            const q = searchAnimal.toLowerCase()
+                            return !q || (a.Nom ?? '').toLowerCase().includes(q) ||
+                              (a.EspeceNom ?? '').toLowerCase().includes(q) ||
+                              (a.RaceNom ?? '').toLowerCase().includes(q)
+                          })
+                          .filter(a => !mesAnimaux.some(m => (m.Id ?? m.id) === (a.Id ?? a.id)))
+                          .slice(0, 20)
+                          .map((a, idx) => (
+                            <div key={a.Id ?? a.id ?? idx}
+                              onClick={() => handleAddAnimal(a)}
+                              className="flex items-center gap-3 p-3 border-2 border-black rounded-xl cursor-pointer hover:bg-primary hover:text-white transition-all group">
+                              <div className="w-10 h-10 rounded-full bg-primary-fixed border border-black flex items-center justify-center flex-shrink-0 group-hover:bg-white/20">
+                                <span className="material-symbols-outlined text-primary text-base group-hover:text-white">pets</span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-bold text-sm truncate">{a.Nom ?? 'Animal'}</p>
+                                <p className="text-xs opacity-70">{a.EspeceNom ?? ''}{a.RaceNom ? ` · ${a.RaceNom}` : ''} {a.Age != null ? `· ${a.Age} an${a.Age > 1 ? 's' : ''}` : ''}</p>
+                              </div>
+                              <span className="material-symbols-outlined text-base opacity-50 group-hover:opacity-100">add_circle</span>
+                            </div>
+                          ))}
+                        {animauxDispo.length === 0 && (
+                          <div className="py-8 text-center text-on-surface-variant">
+                            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                            Chargement des animaux...
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </Modal>
                 </FadeIn>
               )}
 
@@ -314,8 +568,8 @@ const UserProfile = () => {
                               {cmd.Total_prix != null && (
                                 <span className="font-extrabold text-primary">{Number(cmd.Total_prix).toLocaleString('fr-DZ')} DZD</span>
                               )}
-                              <StatutBadge statut={paiementLabel} />
-                              <StatutBadge statut={statutLabel} />
+                              {/* Un seul badge pertinent : statut livraison, sinon statut paiement en fallback */}
+                              <StatutBadge statut={statutLabel && statutLabel !== 'En cours' ? statutLabel : paiementLabel} />
                             </div>
                           </div>
                         )
@@ -393,9 +647,9 @@ const UserProfile = () => {
                                     if (!window.confirm('Annuler cette demande ?')) return
                                     try {
                                       await annulerDemandeAdoption(adop.Id)
-                                      setAdoptions(prev => prev.filter(a => a.Id !== adop.Id))
-                                    } catch {
-                                      alert('Erreur lors de l\'annulation')
+                                      setAdoptions(prev => prev.map(a => a.Id === adop.Id ? { ...a, StatutLabel: 'Annulé', Statut: 'Annulé' } : a))
+                                    } catch (err) {
+                                      alert(`Erreur lors de l'annulation: ${err?.response?.data?.message || err.message}`);
                                     }
                                   }}
                                   className="text-[10px] text-error font-bold flex items-center gap-1 hover:underline"

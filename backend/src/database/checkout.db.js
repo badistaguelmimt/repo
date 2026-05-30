@@ -112,28 +112,27 @@ export async function createCheckout(data) {
 export async function getCommandesByUtilisateur(idUtilisateur) {
   const [rows] = await db.query(
     `SELECT
-       c.Id             AS commandeId,
-       c.Statut         AS commandeStatutId,
-       sc.Statut,
-       sc.Statut        AS StatutId,
-       s.Statut         AS StatutLabel,
-       c.Id, sc.Id      AS sousCommandeId,
-       sc.Total_prix,
-       r.NomRefuge,
-       pm.Montant       AS MontantPaiement,
-       pm.Statut        AS PaiementStatutId,
-       sp.Statut        AS PaiementStatutLabel,
-       pm.stripe_payment_intent_id AS PaymentRef,
+       c.Id                              AS commandeId,
+       ANY_VALUE(c.Statut)               AS commandeStatutId,
+       ANY_VALUE(sc.Statut)              AS StatutId,
+       ANY_VALUE(s.Statut)               AS StatutLabel,
+       sc.Id                             AS sousCommandeId,
+       ANY_VALUE(sc.Total_prix)          AS Total_prix,
+       ANY_VALUE(r.Nom)                  AS NomRefuge,
+       ANY_VALUE(pm.Montant)             AS MontantPaiement,
+       ANY_VALUE(pm.Statut)              AS PaiementStatutId,
+       ANY_VALUE(sp.Statut)              AS PaiementStatutLabel,
+       ANY_VALUE(pm.stripe_payment_intent_id) AS PaymentRef,
        GROUP_CONCAT(lc.IdProduit, ':', lc.Quantite) AS Lignes
      FROM commande c
-     LEFT JOIN sous_commande sc    ON sc.IdCommande = c.Id
-     LEFT JOIN statut s            ON sc.Statut     = s.Id
-     LEFT JOIN refuge r            ON sc.IdRefuge   = r.Id
-     LEFT JOIN paiement_commande pm ON pm.IdCommande = c.Id
-     LEFT JOIN statut sp           ON pm.Statut     = sp.Id
-     LEFT JOIN ligne_commande lc   ON lc.IdSousCommande = sc.Id
+     LEFT JOIN sous_commande sc     ON sc.IdCommande   = c.Id
+     LEFT JOIN statut s             ON sc.Statut       = s.Id
+     LEFT JOIN refuge r             ON sc.IdRefuge     = r.Id
+     LEFT JOIN paiement_commande pm ON pm.IdCommande   = c.Id
+     LEFT JOIN statut sp            ON pm.Statut       = sp.Id
+     LEFT JOIN ligne_commande lc    ON lc.IdSousCommande = sc.Id
      WHERE c.IdUtilisateur = ?
-     GROUP BY c.Id, sc.Id, r.Id, pm.Id
+     GROUP BY c.Id, sc.Id, pm.Id
      ORDER BY c.Id DESC`,
     [idUtilisateur]
   );
@@ -144,38 +143,38 @@ export async function getCommandesByUtilisateur(idUtilisateur) {
 export async function getRefugeOrdersForUser(idUtilisateur) {
   const [rows] = await db.query(
     `SELECT
-       sc.Id                  AS sousCommandeId,
-       sc.Total_prix,
-       sc.Statut              AS sousCommandeStatutId,
-       ss.Statut              AS StatutLabel,
-       c.Id                   AS commandeId,
-       c.IdUtilisateur,
-       u.Prenom               AS ClientPrenom,
-       u.Nom                  AS ClientNom,
-       r.NomRefuge,
-       l.Addresse,
-       l.Statut               AS livraisonStatutId,
-       ls.Statut              AS LivraisonStatutLabel,
-       l.TrackingNumber,
-       pm.Montant             AS MontantTotal,
-       pm.stripe_payment_intent_id AS PaymentRef,
-       ps.Statut              AS PaiementStatutLabel,
+       sc.Id                                   AS sousCommandeId,
+       ANY_VALUE(sc.Total_prix)                AS Total_prix,
+       ANY_VALUE(sc.Statut)                    AS sousCommandeStatutId,
+       ANY_VALUE(ss.Statut)                    AS StatutLabel,
+       c.Id                                    AS commandeId,
+       ANY_VALUE(c.IdUtilisateur)              AS IdUtilisateur,
+       ANY_VALUE(u.Prenom)                     AS ClientPrenom,
+       ANY_VALUE(u.Nom)                        AS ClientNom,
+       ANY_VALUE(r.Nom)                        AS NomRefuge,
+       ANY_VALUE(l.Addresse)                   AS Addresse,
+       ANY_VALUE(l.Statut)                     AS livraisonStatutId,
+       ANY_VALUE(ls.Statut)                    AS LivraisonStatutLabel,
+       ANY_VALUE(l.TrackingNumber)             AS TrackingNumber,
+       ANY_VALUE(pm.Montant)                   AS MontantTotal,
+       ANY_VALUE(pm.stripe_payment_intent_id)  AS PaymentRef,
+       ANY_VALUE(ps.Statut)                    AS PaiementStatutLabel,
        GROUP_CONCAT(CONCAT(p.Nom, ' x', lc.Quantite) SEPARATOR ', ') AS ArticlesDetail
      FROM sous_commande sc
-     JOIN refuge r            ON sc.IdRefuge   = r.Id
-     JOIN commande c          ON sc.IdCommande = c.Id
-     JOIN utilisateur u       ON c.IdUtilisateur = u.Id
-     LEFT JOIN statut ss      ON sc.Statut      = ss.Id
-     LEFT JOIN livraison l    ON l.IdSousCommande = sc.Id
-     LEFT JOIN statut ls      ON l.Statut       = ls.Id
+     JOIN refuge r             ON sc.IdRefuge     = r.Id
+     JOIN commande c           ON sc.IdCommande   = c.Id
+     JOIN utilisateur u        ON c.IdUtilisateur = u.Id
+     LEFT JOIN statut ss       ON sc.Statut       = ss.Id
+     LEFT JOIN livraison l     ON l.IdSousCommande = sc.Id
+     LEFT JOIN statut ls       ON l.Statut        = ls.Id
      LEFT JOIN paiement_commande pm ON pm.IdCommande = c.Id
-     LEFT JOIN statut ps      ON pm.Statut      = ps.Id
+     LEFT JOIN statut ps       ON pm.Statut       = ps.Id
      LEFT JOIN ligne_commande lc ON lc.IdSousCommande = sc.Id
-     LEFT JOIN produit p      ON lc.IdProduit   = p.Id
+     LEFT JOIN produit p       ON lc.IdProduit    = p.Id
      WHERE r.Id IN (
        SELECT IdRefuge FROM utilisateur_refuge WHERE IdUtilisateur = ?
      )
-     GROUP BY sc.Id, c.Id, u.Id, r.Id, l.Id, pm.Id
+     GROUP BY sc.Id, c.Id
      ORDER BY sc.Id DESC`,
     [idUtilisateur]
   );

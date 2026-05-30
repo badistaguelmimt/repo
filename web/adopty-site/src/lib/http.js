@@ -9,7 +9,7 @@ let tokenGetter = null;
 // Instance Axios partagée dans toute l'application
 export const http = axios.create({
     baseURL,
-    timeout: 10000,
+    timeout: 20000, // 20s — TiDB Cloud peut avoir des cold starts lents
 });
 
 // Permet à main.jsx d'injecter la fonction de récupération du token Clerk.
@@ -58,6 +58,7 @@ export const apiAuthRequest = async (input, config = {}) => {
     const requestConfig = toRequestConfig(input, config);
     const headers = { ...(requestConfig.headers || {}) };
 
+    // Ne résout le token que si le header n'est pas déjà fourni (évite le double appel)
     if (!headers.Authorization) {
         const token = await resolveAuthToken();
         if (token) headers.Authorization = `Bearer ${token}`;

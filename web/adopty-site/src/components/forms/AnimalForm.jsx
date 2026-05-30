@@ -309,12 +309,15 @@ const AnimalForm = ({ initialData = null, refugeId, onClose, onSuccess }) => {
         </legend>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Nom *</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+              Nom * <span className="text-on-surface-variant/50 normal-case font-normal">(max 30 car.)</span>
+            </label>
             <input
               required
               name="Nom"
               value={formData.Nom}
               onChange={handleChange}
+              maxLength={30}
               className="w-full bg-white border-2 border-black px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary rounded-lg"
               placeholder="Ex: Barnabé"
             />
@@ -325,6 +328,7 @@ const AnimalForm = ({ initialData = null, refugeId, onClose, onSuccess }) => {
               name="Prenom"
               value={formData.Prenom}
               onChange={handleChange}
+              maxLength={1024}
               className="w-full bg-white border-2 border-black px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary rounded-lg"
               placeholder="Ex: Le petit roi"
             />
@@ -372,13 +376,17 @@ const AnimalForm = ({ initialData = null, refugeId, onClose, onSuccess }) => {
         {/* Couleur, Statut */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">Couleur</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-on-surface-variant">
+              Couleur
+              <span className="text-on-surface-variant/50 normal-case font-normal ml-1">({(formData.Couleur || '').length}/15)</span>
+            </label>
             <input
               name="Couleur"
               value={formData.Couleur}
               onChange={handleChange}
+              maxLength={15}
               className="w-full bg-white border-2 border-black px-4 py-3 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary rounded-lg"
-              placeholder="Ex: Noir et Blanc"
+              placeholder="Ex: Noir, Doré..."
             />
           </div>
           <div className="space-y-2">

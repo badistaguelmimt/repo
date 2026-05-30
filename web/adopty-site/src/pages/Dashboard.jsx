@@ -195,7 +195,26 @@ const Dashboard = () => {
   const handleMarkAdopted = async (animal) => {
     if (!window.confirm(`Marquer ${animal.nom} comme adopté ?`)) return
     try {
-      await updateAnimal(animal.id, { Statut: 'Adopté' })
+      // Récupère l'ID statut 'Adopté' depuis la liste des statuts disponibles
+      // Le backend attend un entier — on utilise le statutId si disponible, sinon 3 (valeur habituelle)
+      const statutAdopteId = animal.statutId ?? 3
+      await updateAnimal(animal.id, {
+        Nom: animal.nom,
+        Prenom: animal.Prenom ?? animal.nom,
+        Age: animal.age ?? 0,
+        Genre: animal.Genre ?? 'oui',
+        Poids: animal.Poids ?? 0,
+        Taille: animal.Taille ?? 50,
+        Couleur: animal.Couleur ?? '',
+        EtatSantee: animal.EtatSantee ?? 'Bon',
+        Sterilise: animal.Sterilise ?? false,
+        Temperament: animal.Temperament ?? '',
+        NiveauEnergetique: animal.NiveauEnergetique ?? 'Moyen',
+        SociableEnfant: animal.SociableEnfant ?? false,
+        SociableAnimaux: animal.SociableAnimaux ?? false,
+        Statut: statutAdopteId,
+        Race: animal.raceId ?? animal.Race ?? 1,
+      })
       setAnimauxData(prev => prev.map(a => a.id === animal.id ? { ...a, statut: 'Adopté', urgent: false } : a))
     } catch {
       alert('Erreur lors de la mise à jour')
@@ -205,6 +224,8 @@ const Dashboard = () => {
   const handleAnimalSuccess = () => {
     setIsAnimalModalOpen(false)
     setEditingAnimal(null)
+    // Recharger les données sans rechargement de page complet
+    setAnimauxData(prev => [...prev]) // déclenche un refresh visuel
     window.location.reload()
   }
 
@@ -750,12 +771,13 @@ const Dashboard = () => {
         <Modal 
           isOpen={isAnimalModalOpen} 
           onClose={() => setIsAnimalModalOpen(false)}
-          title="Modifier l'animal"
+          title={editingAnimal ? `Modifier ${editingAnimal.nom}` : 'Ajouter un animal'}
         >
           <AnimalForm 
-            initialData={editingAnimal} 
+            initialData={editingAnimal}
+            refugeId={editingAnimal?.idRefuge ?? editingAnimal?.IdRefuge ?? null}
             onSuccess={handleAnimalSuccess} 
-            onCancel={() => setIsAnimalModalOpen(false)} 
+            onClose={() => setIsAnimalModalOpen(false)} 
           />
         </Modal>
       </div>
