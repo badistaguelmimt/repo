@@ -1,10 +1,10 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { PageTransition, FadeIn } from '../components/Animations'
-import Modal from '../components/ui/Modal'
-import AdoptionForm from '../components/forms/AdoptionForm'
-import { useAnimal } from '../hooks/useAnimal'
-import { useRequireAuthAction } from '../hooks/useRequireAuthAction'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import Modal from '../../components/ui/Modal'
+import AdoptionForm from '../../components/forms/AdoptionForm'
+import { useAnimal } from '../../hooks/useAnimal'
+import { useRequireAuthAction } from '../../hooks/useRequireAuthAction'
 
 const Profil = () => {
   const { id } = useParams()

@@ -1,12 +1,12 @@
-import { useEffect, useMemo, useState, useCallback } from 'react'
-import { PageTransition, FadeIn } from '../components/Animations'
-import { getMyPrestataireProfile, getMyPrestataireReservations, updateReservationStatusAsPrestataire, deleteDisponibilite, getDisponibilitesByProfil } from '../services/authApi'
-import { normalizeApiError } from '../lib/http'
-import { useRoleAccess } from '../hooks/useRoleAccess'
-import Modal from '../components/ui/Modal'
-import PrestataireProfileForm from '../components/forms/PrestataireProfileForm'
-import AvailabilityForm from '../components/forms/AvailabilityForm'
-import AvailabilityCalendar from '../components/ui/AvailabilityCalendar'
+﻿import { useEffect, useMemo, useState, useCallback } from 'react'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import { getMyPrestataireProfile, getMyPrestataireReservations, updateReservationStatusAsPrestataire, deleteDisponibilite, getDisponibilitesByProfil } from '../../services/authApi'
+import { normalizeApiError } from '../../lib/http'
+import { useRoleAccess } from '../../hooks/useRoleAccess'
+import Modal from '../../components/ui/Modal'
+import PrestataireProfileForm from '../../components/forms/PrestataireProfileForm'
+import AvailabilityForm from '../../components/forms/AvailabilityForm'
+import AvailabilityCalendar from '../../components/ui/AvailabilityCalendar'
 
 const toCurrency = (value) => `${Number(value || 0).toLocaleString('fr-FR')} DZD`
 

@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+﻿import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { PageTransition, FadeIn } from '../components/Animations'
-import Pagination from '../components/ui/Pagination'
-import { useRefuges } from '../hooks/useRefuge'
-import { useAnimaux } from '../hooks/useAnimaux'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import Pagination from '../../components/ui/Pagination'
+import { useRefuges } from '../../hooks/useRefuge'
+import { useAnimaux } from '../../hooks/useAnimaux'
 
 // Mini animal card for refuge pages
 const MiniAnimalCard = ({ animal }) => (

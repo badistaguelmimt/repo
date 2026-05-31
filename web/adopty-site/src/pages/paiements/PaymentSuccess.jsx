@@ -1,6 +1,6 @@
-import { useLocation, Link } from 'react-router-dom'
+﻿import { useLocation, Link } from 'react-router-dom'
 import { useEffect } from 'react'
-import { PageTransition, FadeIn } from '../components/Animations'
+import { PageTransition, FadeIn } from '../../components/Animations'
 
 const METHODE_LABELS = {
   carte:    { icon: 'credit_card',    label: 'Carte Bancaire' },

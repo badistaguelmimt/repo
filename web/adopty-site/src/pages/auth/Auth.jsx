@@ -1,9 +1,9 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useSignUp, useSignIn, useAuth } from '@clerk/clerk-react'
-import { PageTransition, FadeIn } from '../components/Animations'
+import { PageTransition, FadeIn } from '../../components/Animations'
 import { motion, AnimatePresence } from 'framer-motion'
-import { bootstrapCurrentUtilisateur } from '../services/authApi'
+import { bootstrapCurrentUtilisateur } from '../../services/authApi'
 
 // ── Étapes inscription ──────────────────────────────────────
 const STEPS_SIGNUP = ['Compte', 'Informations', 'Rôle']

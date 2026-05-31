@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { PageTransition, FadeIn } from '../components/Animations'
-import { useRoleAccess } from '../hooks/useRoleAccess'
-import { createSignalementApi } from '../services/authApi'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import { useRoleAccess } from '../../hooks/useRoleAccess'
+import { createSignalementApi } from '../../services/authApi'
 
 const STEPS = ['Situation', 'Description', 'Envoi']
 

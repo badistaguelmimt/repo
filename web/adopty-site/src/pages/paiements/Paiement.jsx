@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react'
+﻿import { useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
-import { useCart } from '../context/CartContext'
-import { PageTransition, FadeIn } from '../components/Animations'
-import { useRequireAuthAction } from '../hooks/useRequireAuthAction'
-import { placeOrder } from '../services/authApi'
+import { useCart } from '../../context/CartContext'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import { useRequireAuthAction } from '../../hooks/useRequireAuthAction'
+import { placeOrder } from '../../services/authApi'
 
 const STEPS = [
   { id: 1, label: 'Coordonnées', icon: 'person' },

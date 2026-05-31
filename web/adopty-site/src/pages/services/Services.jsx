@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo } from 'react'
-import { PageTransition, FadeIn } from '../components/Animations'
-import ServiceCard from '../components/ui/ServiceCard'
-import Modal from '../components/ui/Modal'
-import ReservationForm from '../components/forms/ReservationForm'
-import { usePrestataires, SERVICES_DISPONIBLES } from '../hooks/usePrestataires'
-import { useRequireAuthAction } from '../hooks/useRequireAuthAction'
-import { useRoleAccess } from '../hooks/useRoleAccess'
+﻿import { useState, useEffect, useMemo } from 'react'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import ServiceCard from '../../components/ui/ServiceCard'
+import Modal from '../../components/ui/Modal'
+import ReservationForm from '../../components/forms/ReservationForm'
+import { usePrestataires, SERVICES_DISPONIBLES } from '../../hooks/usePrestataires'
+import { useRequireAuthAction } from '../../hooks/useRequireAuthAction'
+import { useRoleAccess } from '../../hooks/useRoleAccess'
 
 const TAB_ICONS = { 'Pet-sitting': 'home', 'Promenade': 'directions_walk' }
 const TAB_DESCRIPTIONS = {

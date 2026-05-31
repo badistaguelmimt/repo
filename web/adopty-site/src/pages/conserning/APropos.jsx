@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { PageTransition, FadeIn } from '../components/Animations'
+﻿import { Link } from 'react-router-dom'
+import { PageTransition, FadeIn } from '../../components/Animations'
 
 const valeurs = [
   {

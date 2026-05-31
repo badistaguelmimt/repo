@@ -22,12 +22,16 @@ router.get("/clerk/:id", protectRoute, utilisateur.getUtilisateurByClerkIdContro
 router.get("/:id", protectRoute, isOwnerOrAdmin, utilisateur.getAccountControlleur);
 
 // Routes protégées - gestion des animaux de l'utilisateur
-// GET    /animaux/:utilisateurId         → liste les animaux de l'utilisateur
-// POST   /animal/:utilisateurId/:animalId → ajoute un animal à l'utilisateur
-// DELETE /animal/:utilisateurId/:animalId → retire un animal de l'utilisateur
+// GET    /animaux/:utilisateurId              → liste les animaux de l'utilisateur
+// POST   /animal/:utilisateurId/:animalId    → ajoute un animal à l'utilisateur
+// DELETE /animal/:utilisateurId/:animalId    → retire un animal de l'utilisateur
+// PUT    /animal/set/:utilisateurId/:animalId   → lie un animal à l'utilisateur (adoption acceptée)
+// PUT    /animal/unset/:utilisateurId/:animalId → délie un animal de l'utilisateur (transfert refuge)
 router.get("/animaux/:id", protectRoute, isOwnerOrAdmin, utilisateur.getUtilisateurAnimalsByIdControlleur);
 router.post("/animal/:utilisateurId/:animalId", protectRoute, utilisateur.addAnimalToUtilisateurByIdsControlleur);
 router.delete("/animal/:utilisateurId/:animalId", protectRoute, utilisateur.removeAnimalFromUtilisateurByIdsControlleur);
+router.put("/animal/set/:utilisateurId/:animalId", protectRoute, utilisateur.setAnimalToUtilisateurByIdsControlleur);
+router.put("/animal/unset/:utilisateurId/:animalId", protectRoute, utilisateur.unsetAnimalToUtilisateurByIdsControlleur);
 
 // Routes protégées - gestion des refuges de l'utilisateur
 router.delete("/refuge/:id", protectRoute, utilisateur.removeRefugeToUtilisateurByIdsControlleur);

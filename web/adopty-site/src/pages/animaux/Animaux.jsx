@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
-import { PageTransition, FadeIn } from '../components/Animations'
-import AnimalCard from '../components/ui/AnimalCard'
-import Pagination from '../components/ui/Pagination'
-import { useFilters } from '../hooks/useFilters'
+﻿import { useState, useEffect } from 'react'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import AnimalCard from '../../components/ui/AnimalCard'
+import Pagination from '../../components/ui/Pagination'
+import { useFilters } from '../../hooks/useFilters'
 
 const ESPECES = ['Tous', 'Chien', 'Chat', 'Lapin']
 const TAILLES = ['Petit', 'Moyen', 'Grand']

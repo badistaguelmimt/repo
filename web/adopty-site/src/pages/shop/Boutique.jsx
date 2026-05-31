@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
-import { PageTransition, FadeIn } from '../components/Animations'
-import ProductCard from '../components/ui/ProductCard'
-import Pagination from '../components/ui/Pagination'
-import { useProduits } from '../hooks/useProduits'
-import { useRoleAccess } from '../hooks/useRoleAccess'
-import { getUtilisateurRefuges } from '../services/authApi'
+﻿import { useState, useEffect, useMemo } from 'react'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import ProductCard from '../../components/ui/ProductCard'
+import Pagination from '../../components/ui/Pagination'
+import { useProduits } from '../../hooks/useProduits'
+import { useRoleAccess } from '../../hooks/useRoleAccess'
+import { getUtilisateurRefuges } from '../../services/authApi'
 
 const CATEGORIES = ['Tous', 'Alimentation', 'Jouets', 'Accessoires', 'Hygiène', 'Santé']
 const SORTS = [

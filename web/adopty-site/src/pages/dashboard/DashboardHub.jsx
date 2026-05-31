@@ -1,7 +1,7 @@
-import Dashboard from './Dashboard'
+﻿import Dashboard from './Dashboard'
 import PrestataireDashboard from './PrestataireDashboard'
 import RefugeDashboard from './RefugeDashboard'
-import { useRoleAccess, ROLE_KEYS } from '../hooks/useRoleAccess'
+import { useRoleAccess, ROLE_KEYS } from '../../hooks/useRoleAccess'
 
 const DashboardHub = () => {
   const { role } = useRoleAccess()

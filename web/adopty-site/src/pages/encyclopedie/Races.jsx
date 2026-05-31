@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react'
-import { PageTransition, FadeIn } from '../components/Animations'
-import BreedDetailModal from '../components/ui/BreedDetailModal'
-import { useRaces } from '../hooks/useRaces'
-import { useAnimaux } from '../hooks/useAnimaux'
+﻿import { useState, useMemo } from 'react'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import BreedDetailModal from '../../components/ui/BreedDetailModal'
+import { useRaces } from '../../hooks/useRaces'
+import { useAnimaux } from '../../hooks/useAnimaux'
 
 const ITEMS_PER_PAGE = 12
 

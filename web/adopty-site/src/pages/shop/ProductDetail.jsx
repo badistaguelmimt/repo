@@ -1,14 +1,14 @@
-import { useEffect, useState, useCallback } from 'react'
+﻿import { useEffect, useState, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
-import { PageTransition, FadeIn } from '../components/Animations'
-import { getProduitById, getProduitPhotos, getProduitMateriaux, getRefugeById } from '../services/publicApi'
-import { mapProduit } from '../hooks/useProduit'
-import { mapRefuge } from '../hooks/useRefuge'
-import { useCart } from '../context/CartContext'
-import { useRequireAuthAction } from '../hooks/useRequireAuthAction'
-import { useRoleAccess } from '../hooks/useRoleAccess'
-import Badge from '../components/ui/Badge'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import { getProduitById, getProduitPhotos, getProduitMateriaux, getRefugeById } from '../../services/publicApi'
+import { mapProduit } from '../../hooks/useProduit'
+import { mapRefuge } from '../../hooks/useRefuge'
+import { useCart } from '../../context/CartContext'
+import { useRequireAuthAction } from '../../hooks/useRequireAuthAction'
+import { useRoleAccess } from '../../hooks/useRoleAccess'
+import Badge from '../../components/ui/Badge'
 import {
   getUtilisateurByClerkId,
   getWishlistByUtilisateur,
@@ -17,7 +17,7 @@ import {
   addLigneWishlist,
   removeLigneWishlist,
   getUtilisateurRefuges,
-} from '../services/authApi'
+} from '../../services/authApi'
 
 const ProductDetail = () => {
   const { id } = useParams()

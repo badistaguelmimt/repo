@@ -1,13 +1,13 @@
-import { Link } from 'react-router-dom'
+﻿import { Link } from 'react-router-dom'
 import { useEffect, useState, useCallback } from 'react'
 import { useUser, useClerk, useAuth, SignedIn, SignedOut } from '@clerk/clerk-react'
-import { PageTransition, FadeIn } from '../components/Animations'
-import { getMyReservations, getMesDemandesAdoption, annulerDemandeAdoption, getMesCommandes, cancelReservation, updateUtilisateurProfil, getMesAnimauxPersonnels, addAnimalPersonnel, removeAnimalPersonnel } from '../services/authApi'
-import { getAnimaux } from '../services/publicApi'
-import { useCurrentUser } from '../hooks/useCurrentUser'
-import { normalizeApiError } from '../lib/http'
-import { useRoleAccess, ROLE_KEYS } from '../hooks/useRoleAccess'
-import Modal from '../components/ui/Modal'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import { getMyReservations, getMesDemandesAdoption, annulerDemandeAdoption, getMesCommandes, cancelReservation, updateUtilisateurProfil, getMesAnimauxPersonnels, addAnimalPersonnel, removeAnimalPersonnel } from '../../services/authApi'
+import { getAnimaux } from '../../services/publicApi'
+import { useCurrentUser } from '../../hooks/useCurrentUser'
+import { normalizeApiError } from '../../lib/http'
+import { useRoleAccess, ROLE_KEYS } from '../../hooks/useRoleAccess'
+import Modal from '../../components/ui/Modal'
 
 const NAV_ITEMS = [
   { id: 'profil',      label: 'Mon Profil',        icon: 'person' },

@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
+﻿import { useState, useEffect } from 'react'
 import { SignedIn, SignedOut } from '@clerk/clerk-react'
 import { Link, useLocation } from 'react-router-dom'
-import { PageTransition, FadeIn } from '../components/Animations'
-import { useChat } from '../hooks/useChat'
-import { ConversationList } from '../components/chat/ConversationList'
-import { ChatRoom } from '../components/chat/ChatRoom'
+import { PageTransition, FadeIn } from '../../components/Animations'
+import { useChat } from '../../hooks/useChat'
+import { ConversationList } from '../../components/chat/ConversationList'
+import { ChatRoom } from '../../components/chat/ChatRoom'
 
 /**
  * Messages — Page de messagerie temps réel.
