@@ -5,9 +5,10 @@ import { protectRoute, adminOnly, isOwnerOrAdmin } from "../midleware/auth.midle
 
 const router = Router()
 
-// Bootstrap du compte backend a partir d'un utilisateur Clerk authentifie
-// L'auth est validée dans le contrôleur via getAuth(req) (méthode recommandée Clerk v5+)
-router.post("/bootstrap", utilisateur.bootstrapCurrentUtilisateurControlleur);
+// Plus besoin de /bootstrap, la synchro se fait via webhooks Clerk -> Inngest
+
+// Route authentifiée — retourne l'utilisateur courant + ses rôles (remplace /bootstrap)
+router.get("/me", protectRoute, utilisateur.getMeControlleur);
 
 // Route admin only - liste tous les utilisateurs
 router.get("/", protectRoute, adminOnly, utilisateur.getAllAccountsControlleur);
@@ -38,8 +39,9 @@ router.delete("/refuge/:id", protectRoute, utilisateur.removeRefugeToUtilisateur
 router.post("/refuge/:id", protectRoute, utilisateur.addRefugeToUtilisateurByIdsControlleur);
 
 // Routes admin only - gestion des rôles (admin uniquement)
-router.delete("/role/:id", protectRoute, adminOnly, utilisateur.removeRoleToUtilisateurByIdsControlleur);
-router.post("/role/:id", protectRoute, adminOnly, utilisateur.addRoleToUtilisateurByIdsControlleur);
+// :utilisateurId = Id de l'utilisateur, :roleId = Id du rôle
+router.delete("/role/:utilisateurId/:roleId", protectRoute, adminOnly, utilisateur.removeRoleToUtilisateurByIdsControlleur);
+router.post("/role/:utilisateurId/:roleId", protectRoute, adminOnly, utilisateur.addRoleToUtilisateurByIdsControlleur);
 
 // Routes protégées - modification du propre compte (propriétaire ou admin)
 router.post("/", protectRoute, utilisateur.createAccountControlleur);

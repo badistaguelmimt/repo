@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { PageTransition, FadeIn } from '../../components/Animations'
 import { getMyPrestataireProfile, getMyPrestataireReservations, updateReservationStatusAsPrestataire, deleteDisponibilite, getDisponibilitesByProfil } from '../../services/authApi'
 import { normalizeApiError } from '../../lib/http'
@@ -61,9 +61,9 @@ const PrestataireDashboard = () => {
     setIsAvailModalOpen(true)
   }, [])
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (showLoading = true) => {
     if (!backendUserId) return
-    setIsLoading(true)
+    if (showLoading) setIsLoading(true)
     const issues = []
 
     const [profileResult, reservationsResult] = await Promise.allSettled([
@@ -112,7 +112,7 @@ const PrestataireDashboard = () => {
   const handleUpdateStatus = async (id, statut) => {
     try {
       await updateReservationStatusAsPrestataire(id, statut)
-      loadData()
+      loadData(false)
     } catch {
       alert('Erreur lors de la mise à jour du statut')
     }
@@ -432,7 +432,7 @@ const PrestataireDashboard = () => {
           <PrestataireProfileForm
             initialData={myProfile}
             onClose={() => setIsProfileModalOpen(false)}
-            onSuccess={loadData}
+            onSuccess={() => loadData(false)}
           />
         </Modal>
 
@@ -447,7 +447,7 @@ const PrestataireDashboard = () => {
             initialData={editingAvail}
             profilId={myProfile?.Id}
             onClose={() => setIsAvailModalOpen(false)}
-            onSuccess={loadData}
+            onSuccess={() => loadData(false)}
           />
         </Modal>
       </div>

@@ -47,6 +47,20 @@ export const isUserInConversation = async (conversationId, utilisateurId) => {
   }
 };
 
+/** Vérifie si l'utilisateur est participant avec statut 'accepted' (peut envoyer des messages) */
+export const isAcceptedParticipant = async (conversationId, utilisateurId) => {
+  try {
+    const [rows] = await db.query(
+      "SELECT * FROM conversation_participant WHERE IdConversation = ? AND IdUtilisateur = ? AND Statut = 'accepted'",
+      [conversationId, utilisateurId]
+    );
+    return rows.length > 0;
+  } catch (error) {
+    console.error("Erreur isAcceptedParticipant :", error);
+    return false;
+  }
+};
+
 export const updateConversationParticipant = async (id, conversation_participant) => {
   const [result] = await db.query(
     `UPDATE conversation_participant SET 

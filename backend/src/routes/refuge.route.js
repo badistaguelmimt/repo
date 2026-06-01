@@ -1,15 +1,15 @@
 import { Router } from "express";
 import * as refuge from "../controlleurs/refuge.controlleur.js"
-import { protectRoute, refugeOnly, isOwnerOrAdmin, adminOnly } from "../midleware/auth.midleware.js";
+import { protectRoute, refugeOnly, isOwnerOrAdmin, adminOnly, hasAnyRole } from "../midleware/auth.midleware.js";
 
 const router = Router()
 
 // Routes protégées - réservées aux refuges (création)
 router.post("/", protectRoute, refugeOnly, refuge.createRefugeControlleur);
 
-// Routes protégées - modification/suppression (propriétaire ou admin)
-router.put("/:id", protectRoute, refugeOnly, isOwnerOrAdmin, refuge.updateRefugeControlleur);
-router.delete("/:id", protectRoute, refugeOnly, isOwnerOrAdmin, refuge.deleteRefugeControlleur);
+// Routes protégées - modification/suppression (propriétaire, refuge gestionnaire, ou admin)
+router.put("/:id", protectRoute, hasAnyRole(["Refuge", "Admin"]), refuge.updateRefugeControlleur);
+router.delete("/:id", protectRoute, hasAnyRole(["Refuge", "Admin"]), refuge.deleteRefugeControlleur);
 
 // Routes Admin
 router.put("/:id/verify", protectRoute, adminOnly, refuge.verifyRefugeControlleur);

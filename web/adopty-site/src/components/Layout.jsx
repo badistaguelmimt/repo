@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext'
 import { useNotifications } from '../context/NotificationContext'
 import { UserButton, SignedIn, SignedOut, useAuth } from '@clerk/clerk-react'
 import { useRoleAccess, ROLE_KEYS } from '../hooks/useRoleAccess'
+import Messages from '../pages/messagerie/Messages'
 
 const Layout = ({ children }) => {
   const location = useLocation()
@@ -15,6 +16,7 @@ const Layout = ({ children }) => {
   const [cartOpen, setCartOpen] = useState(false)
   const [notificationsOpen, setNotificationsOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [messagesOpen, setMessagesOpen] = useState(false)
   const { canAccessDashboard, role, loading: rolesLoading } = useRoleAccess()
 
   const isAuthPage = location.pathname === '/auth'
@@ -28,6 +30,12 @@ const Layout = ({ children }) => {
     }
     return () => { document.body.style.overflow = '' }
   }, [cartOpen, notificationsOpen, mobileMenuOpen])
+
+  useEffect(() => {
+    const handleOpenMessaging = () => setMessagesOpen(true)
+    window.addEventListener('open-messaging', handleOpenMessaging)
+    return () => window.removeEventListener('open-messaging', handleOpenMessaging)
+  }, [])
 
   useEffect(() => {
     // Si Clerk est chargé et que c'est l'ouverture d'un nouvel onglet,
@@ -158,18 +166,6 @@ const Layout = ({ children }) => {
 
           {/* Right actions */}
           <div className="flex items-center gap-4">
-            {/* Messagerie */}
-            {isSignedIn && !isAuthPage && (
-              <Link
-                to="/messages"
-                className={`relative p-2 rounded-lg hover:bg-surface-container transition-colors border-2 hover:border-black
-                  ${location.pathname === '/messages' ? 'bg-surface-container border-black' : 'border-transparent'}`}
-                title="Messagerie"
-              >
-                <span className="material-symbols-outlined text-primary text-2xl">chat</span>
-              </Link>
-            )}
-
             {/* Notifications */}
             {isSignedIn && !isAuthPage && (
               <button
@@ -503,6 +499,21 @@ const Layout = ({ children }) => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* FLOATING MESSAGING BUTTON */}
+      {isSignedIn && !isAuthPage && (
+        <button
+          onClick={() => setMessagesOpen(true)}
+          className="fixed bottom-6 left-6 z-[150] w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all"
+          title="Ouvrir la messagerie"
+        >
+          <span className="material-symbols-outlined text-3xl">chat</span>
+          {/* Optionnel: un petit badge si on veut afficher le nb de messages non lus */}
+        </button>
+      )}
+
+      {/* MESSAGING DRAWER */}
+      <Messages isOpen={messagesOpen} onClose={() => setMessagesOpen(false)} />
     </div>
   )
 }

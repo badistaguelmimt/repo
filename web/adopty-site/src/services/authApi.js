@@ -6,24 +6,19 @@ export const getUtilisateurByClerkId = async (clerkId) => {
     return apiAuthRequest(endpoints.utilisateurByClerkId(clerkId));
 };
 
-// Synchronise le profil de l'utilisateur connecté avec notre base de données.
-// Appelé au démarrage de l'application après la connexion Clerk.
-export const bootstrapCurrentUtilisateur = async (payload = {}) => {
+// Récupère le profil de l'utilisateur connecté + ses rôles depuis la DB.
+// Remplace l'ancien /bootstrap — retourne { utilisateur, roles }.
+export const getCurrentUtilisateur = async (token) => {
     const config = {
-        url: endpoints.utilisateurBootstrap,
-        method: "post",
-        data: payload,
-        timeout: 30000, // Bootstrap peut être lent (cold start TiDB + plusieurs opérations DB)
+        url: "/api/utilisateurs/me",
+        method: "get",
     };
-
-    // Si un token est fourni explicitement, on court-circuite l'intercepteur automatique
-    // pour gérer les cas où Clerk n'a pas encore propagé le token
-    if (payload.token) {
-        config.headers = { Authorization: `Bearer ${payload.token}` };
-    }
-
+    if (token) config.headers = { Authorization: `Bearer ${token}` };
     return apiAuthRequest(config);
 };
+
+// Alias de compatibilité (peut être supprimé après migration complète)
+export const bootstrapCurrentUtilisateur = getCurrentUtilisateur;
 
 export const getUtilisateurAnimaux = async (utilisateurId) => {
     return apiAuthRequest(endpoints.utilisateurAnimaux(utilisateurId));
@@ -219,6 +214,40 @@ export const getAdminStats = async () => {
     return apiAuthRequest({ url: "/api/utilisateurs/admin/stats", method: "get" });
 };
 
+// ── Admin : Utilisateurs ──────────────────────────────────────────────────────
+export const adminUpdateUser = (id, data) =>
+    apiAuthRequest({ url: `/api/utilisateurs/${id}`, method: 'put', data });
+
+export const adminDeleteUser = (id) =>
+    apiAuthRequest({ url: `/api/utilisateurs/${id}`, method: 'delete' });
+
+// :utilisateurId/:roleId — deux params dans l'URL (voir utilisateur.route.js)
+export const adminAddRole = (utilisateurId, roleId) =>
+    apiAuthRequest({ url: `/api/utilisateurs/role/${utilisateurId}/${roleId}`, method: 'post' });
+
+export const adminRemoveRole = (utilisateurId, roleId) =>
+    apiAuthRequest({ url: `/api/utilisateurs/role/${utilisateurId}/${roleId}`, method: 'delete' });
+
+export const getAllRoles = () =>
+    apiAuthRequest({ url: '/api/roles', method: 'get' });
+
+export const getUserRoles = (utilisateurId) =>
+    apiAuthRequest({ url: `/api/utilisateurs/roles/${utilisateurId}`, method: 'get' });
+
+// ── Admin : Refuges ───────────────────────────────────────────────────────────
+export const adminUpdateRefuge = (id, data) =>
+    apiAuthRequest({ url: `/api/refuges/${id}`, method: 'put', data });
+
+export const adminDeleteRefuge = (id) =>
+    apiAuthRequest({ url: `/api/refuges/${id}`, method: 'delete' });
+
+// ── Admin : Prestataires ──────────────────────────────────────────────────────
+export const adminUpdatePrestataire = (id, data) =>
+    apiAuthRequest({ url: `/api/profil_prestataires/${id}`, method: 'put', data });
+
+export const adminDeletePrestataire = (id) =>
+    apiAuthRequest({ url: `/api/profil_prestataires/${id}`, method: 'delete' });
+
 // Historique des commandes de l'utilisateur connecté
 export const getMyOrders = async (userId) => {
     return apiAuthRequest({ url: `/api/commandes/utilisateur/${userId}`, method: "get" });
@@ -321,6 +350,16 @@ export const createConversation = async (data) => {
 /** Trouve ou crée une conversation directe avec un utilisateur cible */
 export const findOrCreateDirectConversation = async (targetUserId) => {
     return apiAuthRequest({ url: "/api/conversations/direct", method: "post", data: { targetUserId } });
+};
+
+/** Accepter une demande de conversation DM */
+export const acceptConversation = async (conversationId) => {
+    return apiAuthRequest({ url: `/api/conversations/${conversationId}/accept`, method: "put" });
+};
+
+/** Refuser et supprimer une demande de conversation DM */
+export const declineConversation = async (conversationId) => {
+    return apiAuthRequest({ url: `/api/conversations/${conversationId}/decline`, method: "delete" });
 };
 
 /** Récupère les messages d'une conversation */

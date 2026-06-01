@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { PageTransition, FadeIn } from '../../components/Animations'
 import { getAnimauxByRefuge, getProduitsByRefuge } from '../../services/publicApi'
 import { getUtilisateurRefuges, deleteAnimal, deleteProduit, getRefugeOrders, updateOrderStatus, getRefugeDemandesAdoption, updateDemandeAdoptionStatut } from '../../services/authApi'
@@ -34,9 +34,9 @@ const RefugeDashboard = () => {
   const [isProductModalOpen, setIsProductModalOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
 
-  const loadDashboardData = useCallback(async () => {
+  const loadDashboardData = useCallback(async (showLoading = true) => {
     if (!backendUserId) return
-    setIsLoading(true)
+    if (showLoading) setIsLoading(true)
     setApiIssues([])
 
     try {
@@ -132,7 +132,7 @@ const RefugeDashboard = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer cet animal ?')) return
     try {
       await deleteAnimal(id)
-      loadDashboardData()
+      loadDashboardData(false)
     } catch {
       alert('Erreur lors de la suppression')
     }
@@ -146,7 +146,7 @@ const RefugeDashboard = () => {
     if (!window.confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return
     try {
       await deleteProduit(id)
-      loadDashboardData()
+      loadDashboardData(false)
     } catch {
       alert('Erreur lors de la suppression')
     }
@@ -171,7 +171,7 @@ const RefugeDashboard = () => {
 
       setReponseModal(null)
       setCommentaireRetour('')
-      loadDashboardData()
+      loadDashboardData(false)
     } catch {
       alert('Erreur lors de la mise à jour')
     } finally {
@@ -183,7 +183,7 @@ const RefugeDashboard = () => {
   const handleUpdateOrderStatus = async (id, status) => {
     try {
       await updateOrderStatus(id, status)
-      loadDashboardData()
+      loadDashboardData(false)
     } catch {
       alert('Erreur lors de la mise à jour de la commande')
     }
@@ -555,14 +555,14 @@ const RefugeDashboard = () => {
         <Modal isOpen={isAnimalModalOpen} onClose={() => setIsAnimalModalOpen(false)}
           title={editingAnimal ? `Modifier ${editingAnimal.nom}` : 'Ajouter un animal'} size="lg">
           <AnimalForm initialData={editingAnimal} refugeId={myRefuges[0]?.id}
-            onClose={() => setIsAnimalModalOpen(false)} onSuccess={loadDashboardData} />
+            onClose={() => setIsAnimalModalOpen(false)} onSuccess={() => loadDashboardData(false)} />
         </Modal>
 
         {/* Modal Produits */}
         <Modal isOpen={isProductModalOpen} onClose={() => setIsProductModalOpen(false)}
           title={editingProduct ? `Modifier ${editingProduct.nom}` : 'Ajouter un produit'} size="lg">
           <ProductForm initialData={editingProduct} refugeId={myRefuges[0]?.id}
-            onClose={() => setIsProductModalOpen(false)} onSuccess={loadDashboardData} />
+            onClose={() => setIsProductModalOpen(false)} onSuccess={() => loadDashboardData(false)} />
         </Modal>
 
         {/* Modal réponse adoption */}

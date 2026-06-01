@@ -1,12 +1,12 @@
 import { useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useSignIn } from '@clerk/clerk-react'
 import { findOrCreateDirectConversation } from '../services/authApi'
 import { useCurrentUser } from './useCurrentUser'
 
 /**
  * useStartConversation — Crée ou retrouve une conversation directe avec un utilisateur cible,
- * puis navigue vers /messages en passant l'ID de conversation pour l'auto-ouvrir.
+ * puis ouvre le drawer de messagerie en passant l'ID de conversation pour l'auto-ouvrir.
  *
  * Usage :
  *   const { startConversation, isLoading } = useStartConversation()
@@ -15,6 +15,7 @@ import { useCurrentUser } from './useCurrentUser'
 export const useStartConversation = () => {
   const { user: currentUser, isLoading: isLoadingUser } = useCurrentUser()
   const navigate = useNavigate()
+  const location = useLocation()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -36,13 +37,17 @@ export const useStartConversation = () => {
 
     try {
       const result = await findOrCreateDirectConversation(targetUserId)
-      // Naviguer vers /messages en passant l'ID de conv à auto-ouvrir
-      navigate('/messages', {
+      // Mettre à jour l'état de l'URL pour passer l'ID de conversation à Messages.jsx
+      navigate(location.pathname, {
+        replace: true,
         state: {
+          ...location.state,
           openConvId:  result.conversationId,
           targetName,
         }
       })
+      // Déclencher l'ouverture du drawer dans Layout
+      window.dispatchEvent(new Event('open-messaging'))
     } catch (err) {
       console.error('[useStartConversation]', err)
       setError('Impossible de démarrer la conversation.')

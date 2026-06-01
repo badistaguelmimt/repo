@@ -30,8 +30,8 @@ export async function createSignalementControlleur(req, res) {
 
     const statutId = await resolveStatut("En attente");
 
-    // Raison est varchar(100) dans la DB, on doit la tronquer pour eviter l'erreur 500
-    const truncatedRaison = Raison.length > 100 ? Raison.substring(0, 97) + "..." : Raison;
+    // Raison est varchar(1500) dans la DB
+    const truncatedRaison = Raison.length > 1500 ? Raison.substring(0, 1497) + "..." : Raison;
 
     const id = await createSignalement({
       IdUtilisateur: req.user.Id,

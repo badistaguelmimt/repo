@@ -1,4 +1,4 @@
-import { createConversation, deleteConversation, getAllConversations, getConversationById, getConversationsByUtilisateurId, updateConversation, findOrCreateDirectConversation } from "../database/conversation.db.js";
+import { createConversation, deleteConversation, getAllConversations, getConversationById, getConversationsByUtilisateurId, updateConversation, findOrCreateDirectConversation, acceptDirectConversation, declineDirectConversation } from "../database/conversation.db.js";
 
 import { getUtilisateurById } from "../database/utilisateur.db.js";
 
@@ -158,6 +158,32 @@ export async function findOrCreateDirectConversationControlleur(req, res) {
         res.status(result.created ? 201 : 200).json(result);
     } catch (error) {
         console.error("Erreur findOrCreateDirectConversation:", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+}
+
+/** PUT /api/conversations/:id/accept — Accepter une demande de DM */
+export async function acceptConversationControlleur(req, res) {
+    try {
+        const { id } = req.params;
+        const userId = req.user.Id;
+        const affected = await acceptDirectConversation(id, userId);
+        if (!affected) return res.status(404).json({ message: "Conversation non trouvée ou déjà acceptée" });
+        res.status(200).json({ message: "Conversation acceptée" });
+    } catch (error) {
+        console.error("Erreur acceptConversation:", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+}
+
+/** DELETE /api/conversations/:id/decline — Refuser et supprimer une demande de DM */
+export async function declineConversationControlleur(req, res) {
+    try {
+        const { id } = req.params;
+        await declineDirectConversation(id);
+        res.status(200).json({ message: "Conversation refusée et supprimée" });
+    } catch (error) {
+        console.error("Erreur declineConversation:", error);
         res.status(500).json({ message: "Erreur interne du serveur" });
     }
 }

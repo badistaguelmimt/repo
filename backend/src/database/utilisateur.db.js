@@ -72,6 +72,14 @@ export const updateUtilisateur = async (id, user) => {
 };
 
 export const deleteUtilisateur = async (id) => {
+  // Supprime d'abord les références dans les tables de liaison pour éviter les erreurs de contrainte de clé étrangère
+  await db.query("DELETE FROM role_utilisateur WHERE IdUtilisateur = ?", [id]);
+  await db.query("DELETE FROM refuge_utilisateur WHERE IdUtilisateur = ?", [id]);
+  
+  // NOTE: S'il y a d'autres tables avec ON DELETE RESTRICT (comme profil_prestataire, commandes, etc.),
+  // la suppression échouera pour protéger les données. Dans un vrai système en production,
+  // on préfère souvent "désactiver" (soft delete) un utilisateur plutôt que de le supprimer physiquement.
+
   const [result] = await db.query(
     "DELETE FROM utilisateur WHERE Id = ?",
     [id]
@@ -210,16 +218,26 @@ export const removeRefugeToUtilisateurByIds = async (refugeId, utilisateurId) =>
 
 export const getUtilisateurAnimalsById = async (id) => {
   const [rows] = await db.query(
-    `SELECT a.* FROM utilisateur u
+    `SELECT a.*,
+       r.Nom AS RaceNom,
+       e.Nom AS EspeceNom
+     FROM utilisateur u
      JOIN possession p ON u.Id = p.IdUtilisateur 
      JOIN animal a ON p.IdAnimal = a.Id
-     WHERE u.Id = ? AND p.IdRefuge IS NULL`,  // a surveiller: condition pour pas melanger avec refuge
+     LEFT JOIN race r ON a.Race = r.Id
+     LEFT JOIN espece e ON r.Espece = e.Id
+     WHERE u.Id = ? AND p.IdRefuge IS NULL`,
      [
       id
      ]
   );
 
-  return rows.map(row =>new Animal(row));
+  return rows.map(row => {
+    const animal = new Animal(row);
+    animal.RaceNom = row.RaceNom;
+    animal.EspeceNom = row.EspeceNom;
+    return animal;
+  });
 }
 
  //   todo : check les deux funcs juste en bas car pas fini 

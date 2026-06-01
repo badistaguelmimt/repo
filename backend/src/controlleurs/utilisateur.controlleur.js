@@ -147,164 +147,6 @@ export async function getAllAccountsControlleur(req, res) {
     }
 }
 
-// Point d'entrée principal du parcours d'inscription Clerk.
-// Appelé après le sign-in/sign-up Clerk pour synchroniser l'utilisateur
-// en base et créer son profil étendu (Prestataire ou Refuge) si nécessaire.
-export async function bootstrapCurrentUtilisateurControlleur(req, res) {
-    try {
-        const authPayload = getAuth(req);
-        const clerkId = authPayload?.userId;
-
-        if (!clerkId) {
-            return res.status(401).json({ message: "Pas autorisé - utilisateur Clerk introuvable" });
-        }
-
-        // Normalisation des données du formulaire
-        const requestedRole = normalizeRequestedRole(req.body?.role);
-        const providedNom = toSafeString(req.body?.nom);
-        const providedPrenom = toSafeString(req.body?.prenom);
-        const providedAdresse = toSafeString(req.body?.adresse);
-        const providedWilaya = toSafeString(req.body?.wilaya || req.body?.telephone);
-        const providedEmail = toSafeString(req.body?.email);
-        const finalEmail = providedEmail || pickEmailFromClaims(authPayload);
-
-        const extra = {
-            nomRefuge: toSafeString(req.body?.nomRefuge),
-            siret: toSafeString(req.body?.siret),
-            capacite: toSafeString(req.body?.capacite),
-            experience: toSafeString(req.body?.experience),
-            service: toSafeString(req.body?.service),
-            zone: toSafeString(req.body?.zone),
-        };
-
-        // Déterminer la liste des rôles à attribuer
-        const roleNames = ["Utilisateur"];
-        if (requestedRole !== "Utilisateur") roleNames.push(requestedRole);
-
-        // Promotion Admin si l'email correspond à la liste ADMIN_EMAIL
-        const adminEmails = String(ENV.ADMIN_EMAIL ?? "")
-            .split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
-        if (finalEmail && adminEmails.includes(finalEmail.toLowerCase())) {
-            roleNames.push("Admin");
-        }
-
-        // Création ou mise à jour de l'utilisateur en base
-        let utilisateur = await getUtilisateurByClerkId(clerkId);
-        if (!utilisateur) {
-            const createdId = await createUtilisateur({
-                clerkId,
-                stripeCustomerId: null,
-                stripeAccountId: null,
-                Nom: providedNom || "Utilisateur",
-                Prenom: providedPrenom || "",
-                Addresse: providedAdresse,
-                AddresseEmail: finalEmail,
-                Wilaya: (providedWilaya || "").substring(0, 15),
-                MotDePasse: null,
-                Photo: null,
-                CreePar: null,
-                stripeAccountStatus: null,
-            });
-            utilisateur = await getUtilisateurById(createdId);
-        } else {
-            // N'update que si des données ont été fournies dans le body
-            const hasUpdates = providedNom || providedPrenom || providedAdresse || providedEmail || providedWilaya;
-            if (hasUpdates) {
-                await updateUtilisateur(utilisateur.Id, {
-                    Nom: providedNom || utilisateur.Nom,
-                    Prenom: providedPrenom || utilisateur.Prenom,
-                    Addresse: providedAdresse || utilisateur.Addresse,
-                    AddresseEmail: finalEmail || utilisateur.AddresseEmail,
-                    MotDePasse: utilisateur.MotDePasse,
-                    Wilaya: (providedWilaya || utilisateur.Wilaya || '').substring(0, 15),
-                    Photo: utilisateur.Photo,
-                    ModifieePar: utilisateur.Id,
-                    stripeAccountStatus: utilisateur.stripeAccountStatus || null,
-                    stripeAccountId: utilisateur.stripeAccountId,
-                });
-                utilisateur = await getUtilisateurById(utilisateur.Id);
-            }
-        }
-
-        // Synchronisation des rôles (idempotent — IGNORE si déjà présent)
-        // Parallélisé pour éviter N allers-retours DB séquentiels
-        await Promise.all(
-            Array.from(new Set(roleNames)).map(async (roleName) => {
-                const role = await ensureRoleByName(roleName);
-                if (role?.Id) await ensureRoleToUtilisateurByIds(role.Id, utilisateur.Id);
-            })
-        );
-
-        // Création du profil étendu selon le rôle demandé
-        if (requestedRole === "Prestataire") {
-            try {
-                const [exists] = await db.query(
-                    "SELECT Id FROM profil_prestataire WHERE IdUtilisateur = ?",
-                    [utilisateur.Id]
-                );
-                if (exists.length === 0) {
-                    // Mapper le service choisi vers l'ID TypeService correct
-                    const serviceLabel = (extra.service || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                    const typeServiceId =
-                        serviceLabel.includes("pet") || serviceLabel.includes("sitting") || serviceLabel.includes("garde") ? 3
-                        : serviceLabel.includes("promen") ? 4
-                        : serviceLabel.includes("educ") || serviceLabel.includes("dressage") ? 2
-                        : serviceLabel.includes("vet") ? 5
-                        : 1; // Toilettage par défaut seulement si rien ne matche
-
-                    await createProfilPrestataire({
-                        IdUtilisateur: utilisateur.Id,
-                        Experience: extra.experience || "0",
-                        TarifHoraire: 0,
-                        ZoneIntervention: (extra.zone || "Non spécifiée").substring(0, 100),
-                        TypeService: typeServiceId,
-                        Statut: 1,
-                        Bio: "",
-                        NoteMoyenne: 0,
-                    });
-                }
-            } catch (err) {
-                console.error("Erreur création profil prestataire:", err.message);
-            }
-        } else if (requestedRole === "Refuge") {
-            try {
-                const refugeNom = (extra.nomRefuge || `Refuge de ${providedNom}`).substring(0, 50);
-                const [existingRefuge] = await db.query("SELECT Id FROM refuge WHERE Nom = ?", [refugeNom]);
-
-                let refugeId = null;
-                if (existingRefuge.length === 0) {
-                    refugeId = await CreateRefuge({
-                        Nom: refugeNom,
-                        Description: `Capacité: ${extra.capacite || "N/A"} - SIRET: ${extra.siret || "N/A"}`.substring(0, 1024),
-                        Addresse: (providedAdresse || "").substring(0, 70),
-                        AddresseGPS: null,
-                        Telephone: (providedWilaya || "").substring(0, 20),
-                        stripeAccountId: null,
-                        stripeAccountStatus: null,
-                    });
-                } else {
-                    refugeId = existingRefuge[0].Id;
-                }
-
-                if (refugeId) {
-                    await db.query(
-                        "INSERT IGNORE INTO refuge_utilisateur (IdRefuge, IdUtilisateur) VALUES (?, ?)",
-                        [refugeId, utilisateur.Id]
-                    );
-                }
-            } catch (err) {
-                console.error("Erreur création profil refuge:", err.message);
-            }
-        }
-
-        const roles = await getUtilisateurRolesById(utilisateur.Id);
-        res.status(200).json({ utilisateur, roles, canAccessDashboard: true });
-
-    } catch (error) {
-        console.error("Erreur bootstrap utilisateur:", error);
-        res.status(500).json({ message: error.message });
-    }
-}
 
 export async function getUtilisateurByClerkIdControlleur(req, res) {
     try {
@@ -316,6 +158,29 @@ export async function getUtilisateurByClerkIdControlleur(req, res) {
         res.status(500).json({ message: "Erreur interne du serveur" });
     }
 }
+
+/**
+ * GET /api/utilisateurs/me
+ * Remplace l'ancien /bootstrap.
+ * protectRoute a déjà vérifié le token et attaché req.user.
+ * Retourne { utilisateur, roles }.
+ */
+export async function getMeControlleur(req, res) {
+    try {
+        // req.user est déjà résolu par protectRoute
+        const utilisateur = req.user;
+        if (!utilisateur) {
+            return res.status(401).json({ message: "Non authentifié" });
+        }
+
+        const roles = await getUtilisateurRolesById(utilisateur.Id);
+        return res.status(200).json({ utilisateur, roles: roles ?? [] });
+    } catch (error) {
+        console.error("Erreur getMeControlleur:", error);
+        res.status(500).json({ message: "Erreur interne du serveur" });
+    }
+}
+
 
 export async function getUtilisateurRolesByIdControlleur(req, res) {
     try {
@@ -464,18 +329,18 @@ export async function getAdminStatsControlleur(req, res) {
             db.query("SELECT COUNT(*) as count FROM refuge"),
             db.query("SELECT COUNT(*) as count FROM profil_prestataire"),
             db.query("SELECT COUNT(*) as count FROM signalement"),
-            db.query("SELECT COUNT(*) as count FROM signalement s JOIN statut st ON s.Statut = st.Id WHERE LOWER(st.Nom) LIKE '%attente%'"),
+            db.query("SELECT COUNT(*) as count FROM signalement s JOIN statut st ON s.Statut = st.Id WHERE LOWER(st.Statut) LIKE '%attente%'"),
             db.query("SELECT COUNT(*) as count FROM demande_adoption"),
             db.query(`
                 SELECT COUNT(*) as count FROM demande_adoption da
                 JOIN statut st ON da.Statut = st.Id
                 WHERE MONTH(da.DateDemande) = MONTH(CURDATE()) AND YEAR(da.DateDemande) = YEAR(CURDATE())
             `),
-            db.query("SELECT COALESCE(SUM(c.Total_prix), 0) as total FROM commande c"),
+            db.query("SELECT COALESCE(SUM(sc.Total_prix), 0) as total FROM sous_commande sc"),
             db.query(`
                 SELECT COUNT(*) as count FROM commande c
                 JOIN statut st ON c.Statut = st.Id
-                WHERE LOWER(st.Nom) LIKE '%attente%'
+                WHERE LOWER(st.Statut) LIKE '%attente%'
             `),
         ];
 

@@ -79,8 +79,24 @@ app.use(
     })
 );
 
-// Endpoint Inngest : reçoit les webhooks Clerk et déclenche les fonctions de synchronisation
+// Endpoint Inngest natif (utilisé par le serveur Inngest pour appeler nos fonctions)
 app.use("/api/inngest", serve({ client: ingest, functions }));
+
+// Endpoint pour recevoir les Webhooks de Clerk et les envoyer à Inngest
+app.post("/api/webhooks/clerk", async (req, res) => {
+    const evt = req.body;
+    try {
+        if (evt && evt.type === "user.created") {
+            await ingest.send({ name: "clerk/user.created", data: evt.data });
+        } else if (evt && evt.type === "user.deleted") {
+            await ingest.send({ name: "clerk/user.deleted", data: evt.data });
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error("[Webhook Clerk] Erreur envoi Inngest:", err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // Paiement Stripe (webhook + PaymentIntents + Stripe Connect)
 app.use("/api/stripe", stripeRoutes);

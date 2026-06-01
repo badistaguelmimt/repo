@@ -215,7 +215,7 @@ export async function getAllCommandesAdmin() {
        sc.Total_prix,
        sc.Statut          AS sousStatutId,
        ss.Statut          AS StatutLabel,
-       r.NomRefuge,
+       r.Nom              AS NomRefuge,
        pm.Montant         AS MontantTotal,
        pm.stripe_payment_intent_id AS PaymentRef,
        ps.Statut          AS PaiementStatutLabel
@@ -241,7 +241,7 @@ export async function getCommandeEnrichie(idCommande) {
        sc.Total_prix,
        sc.Statut AS sousCommandeStatut,
        s.Statut AS StatutLabel,
-       r.NomRefuge,
+       r.Nom AS NomRefuge,
        l.Addresse,
        l.Statut AS livraisonStatut,
        ls.Statut AS LivraisonStatutLabel,

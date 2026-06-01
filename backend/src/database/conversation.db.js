@@ -65,6 +65,7 @@ export const getConversationsByUtilisateurId = async (utilisateurId) => {
             c.Type,
             c.CreatedAt,
             c.CreatedBy,
+            cp.Statut AS MyStatut,
             -- Nom = prénoms+noms des AUTRES participants (pas l'utilisateur courant)
             GROUP_CONCAT(DISTINCT CONCAT(u.Prenom, ' ', u.Nom) SEPARATOR ', ') AS Nom,
             -- Aperçu du dernier message
@@ -89,7 +90,7 @@ export const getConversationsByUtilisateurId = async (utilisateurId) => {
         -- Les AUTRES participants
         JOIN conversation_participant cp2 ON cp2.IdConversation = c.Id AND cp2.IdUtilisateur != ?
         JOIN utilisateur u ON u.Id = cp2.IdUtilisateur
-        GROUP BY c.Id
+        GROUP BY c.Id, cp.Statut
         ORDER BY DernierMessageAt DESC, c.CreatedAt DESC`,
         [utilisateurId, utilisateurId]
     );
@@ -98,10 +99,28 @@ export const getConversationsByUtilisateurId = async (utilisateurId) => {
         Type:            row.Type,
         CreatedAt:       row.CreatedAt,
         CreatedBy:       row.CreatedBy,
+        MyStatut:        row.MyStatut || 'accepted',
         Nom:             row.Nom || `Conversation #${row.Id}`,
         DernierMessage:  row.DernierMessage ? String(row.DernierMessage).substring(0, 60) + (String(row.DernierMessage).length > 60 ? '…' : '') : null,
         DernierMessageAt: row.DernierMessageAt,
     }));
+}
+
+/** Accepter une demande de conversation (mettre le statut du participant à 'accepted') */
+export const acceptDirectConversation = async (conversationId, userId) => {
+    const [result] = await db.query(
+        `UPDATE conversation_participant SET Statut = 'accepted' WHERE IdConversation = ? AND IdUtilisateur = ?`,
+        [conversationId, userId]
+    );
+    return result.affectedRows;
+}
+
+/** Refuser et supprimer une demande de conversation */
+export const declineDirectConversation = async (conversationId) => {
+    await db.query(`DELETE FROM message WHERE IdConversation = ?`, [conversationId]);
+    await db.query(`DELETE FROM conversation_participant WHERE IdConversation = ?`, [conversationId]);
+    const [result] = await db.query(`DELETE FROM conversation WHERE Id = ?`, [conversationId]);
+    return result.affectedRows;
 }
 
 /**
@@ -132,15 +151,15 @@ export const findOrCreateDirectConversation = async (userIdA, userIdB) => {
     );
     const conversationId = result.insertId;
 
-    // Ajouter les deux participants (INSERT multi-ligne avec les valeurs littérales pour Statut)
+    // Ajouter les deux participants : l'expéditeur est 'accepted', le destinataire est 'pending'
     await db.query(
         `INSERT INTO conversation_participant (IdConversation, IdUtilisateur, Statut, Role, JoinedAt)
-         VALUES (?, ?, 1, 'member', NOW())`,
+         VALUES (?, ?, 'accepted', 'member', NOW())`,
         [conversationId, userIdA]
     );
     await db.query(
         `INSERT INTO conversation_participant (IdConversation, IdUtilisateur, Statut, Role, JoinedAt)
-         VALUES (?, ?, 1, 'member', NOW())`,
+         VALUES (?, ?, 'pending', 'member', NOW())`,
         [conversationId, userIdB]
     );
 

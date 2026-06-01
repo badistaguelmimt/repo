@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@clerk/clerk-react'
-import { bootstrapCurrentUtilisateur } from '../services/authApi'
+import { getCurrentUtilisateur } from '../services/authApi'
 
 export const ROLE_KEYS = {
   VISITEUR: 'visiteur',
@@ -115,33 +115,46 @@ export const useRoleAccess = () => {
       if (!cancelled) setState((prev) => ({ ...prev, loading: true }))
 
       try {
-        // ✅ On récupère le token DIRECTEMENT depuis useAuth — pas de race condition
         const token = await getToken()
 
         if (!token) {
           if (retryCount < 3) {
-            // Pas encore de session valide, on réessaie max 3 fois
             setRetryCount(c => c + 1)
             setTimeout(() => setVersion((v) => v + 1), 1000)
             return
           } else {
-             throw new Error("Impossible de récupérer le jeton Clerk après plusieurs tentatives.")
+            throw new Error("Impossible de récupérer le jeton Clerk après plusieurs tentatives.")
           }
         }
 
-        const bootstrap = await bootstrapCurrentUtilisateur({ token })
-        const backendRoles = normalizeRoles(bootstrap?.roles ?? [])
+        let me = null
+        try {
+          // Appel au nouveau endpoint /me — retourne { utilisateur, roles }
+          me = await getCurrentUtilisateur(token)
+        } catch (err) {
+          // 404 avec syncing: true = Inngest n'a pas encore synchronisé le compte
+          const isSyncing = err?.response?.status === 404 && err?.response?.data?.syncing
+          if (isSyncing && retryCount < 5) {
+            console.log(`[useRoleAccess] Synchro en cours, retry ${retryCount + 1}/5...`)
+            setRetryCount(c => c + 1)
+            setTimeout(() => setVersion((v) => v + 1), 2000)
+            return
+          }
+          throw err
+        }
+
+        const backendRoles = normalizeRoles(me?.roles ?? [])
         const nextState = buildRoleState({
           isSignedIn: true,
           roles: backendRoles,
-          backendUserId: bootstrap?.utilisateur?.Id ? String(bootstrap.utilisateur.Id) : null,
+          backendUserId: me?.utilisateur?.Id ? String(me.utilisateur.Id) : null,
           source: 'backend',
         })
 
         roleAccessCache.set(userId, nextState)
         if (!cancelled) setState(nextState)
       } catch (error) {
-        console.error('❌ useRoleAccess bootstrap error:', error)
+        console.error('❌ useRoleAccess error:', error)
         const fallbackState = buildRoleState({
           isSignedIn: true,
           roles: [ROLE_KEYS.UTILISATEUR],

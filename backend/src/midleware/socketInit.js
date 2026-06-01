@@ -1,7 +1,7 @@
 import { Server } from "socket.io";
 import { verifyToken } from "@clerk/backend";
 import { getUtilisateurByClerkId } from "../database/utilisateur.db.js";
-import { isUserInConversation } from "../database/conversation_participant.db.js";
+import { isUserInConversation, isAcceptedParticipant } from "../database/conversation_participant.db.js";
 import {
     saveMessageFromSocket,
     getMessagesByConversation,
@@ -144,6 +144,12 @@ export const initSocket = (server, { origin }) => {
                 const isMember = await isUserInConversation(conversationId, socket.user.Id);
                 if (!isMember) {
                     return ack({ success: false, error: "Accès non autorisé" });
+                }
+
+                // Vérifier que le participant a accepté la demande (pas pending)
+                const isAccepted = await isAcceptedParticipant(conversationId, socket.user.Id);
+                if (!isAccepted) {
+                    return ack({ success: false, error: "Vous devez d'abord accepter cette conversation pour envoyer des messages" });
                 }
 
                 // Sauvegarder en BDD

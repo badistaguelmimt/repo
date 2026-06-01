@@ -45,6 +45,12 @@ export const getAllAnimals = async () => {
     LEFT JOIN espece e  ON r.Espece = e.Id
     LEFT JOIN possession p   ON p.IdAnimal = a.Id AND p.IdRefuge IS NOT NULL
     LEFT JOIN refuge ref     ON ref.Id = p.IdRefuge
+    WHERE NOT EXISTS (
+      SELECT 1 FROM possession p2 
+      WHERE p2.IdAnimal = a.Id 
+      AND p2.IdUtilisateur IS NOT NULL 
+      AND p2.IdRefuge IS NULL
+    )
   `);
   return rows.map(row => {
     const animal = new Animal(row);

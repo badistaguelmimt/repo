@@ -125,10 +125,39 @@ export const updateStatutControlleur = async (req, res) => {
       return res.status(403).json({ message: "Vous n'êtes pas autorisé à modifier cette demande." });
     }
 
+    // Mapping des statuts frontend vers backend
+    let mappedStatut = Statut;
+    if (Statut === 'Accepté') mappedStatut = 'Validé';
+    if (Statut === 'Refusé') mappedStatut = 'Rejeté';
+
     // Accepte un Id numérique ou un label textuel
-    const statutId = isNaN(Statut) ? await resolveStatut(Statut) : Number(Statut);
+    const statutId = isNaN(mappedStatut) ? await resolveStatut(mappedStatut) : Number(mappedStatut);
 
     await updateDemandeStatut(req.params.id, statutId, CommentaireRetour);
+
+    // Si la demande est validée, mettre à jour l'animal et la possession
+    if (mappedStatut === 'Validé' || statutId === 4) {
+      const statutAdopteId = await resolveStatut('Adopté');
+      
+      // 1. Mettre à jour le statut de l'animal
+      await db.query("UPDATE animal SET Statut = ? WHERE Id = ?", [statutAdopteId, demande.IdAnimal]);
+      
+      // 2. Mettre à jour la possession (associer l'animal à l'adoptant, en gardant le refuge pour historique)
+      // On insère ou met à jour la ligne pour cet animal. S'il y en a déjà une, on update IdUtilisateur.
+      const [possessionRows] = await db.query("SELECT Id FROM possession WHERE IdAnimal = ?", [demande.IdAnimal]);
+      if (possessionRows.length > 0) {
+        await db.query("UPDATE possession SET IdUtilisateur = ? WHERE IdAnimal = ?", [demande.IdUtilisateur, demande.IdAnimal]);
+      } else {
+        await db.query("INSERT INTO possession (IdAnimal, IdUtilisateur, IdRefuge) VALUES (?, ?, ?)", [demande.IdAnimal, demande.IdUtilisateur, demande.IdRefuge]);
+      }
+
+      // 3. Annuler toutes les autres demandes pour ce même animal
+      const statutAnnuleId = await resolveStatut('Annulé');
+      await db.query(
+        "UPDATE demande_adoption SET Statut = ?, CommentaireRetour = 'Animal adopté par une autre personne.' WHERE IdAnimal = ? AND Id != ?",
+        [statutAnnuleId, demande.IdAnimal, req.params.id]
+      );
+    }
     return res.status(200).json({ message: "Statut mis à jour avec succès." });
   } catch (error) {
     console.error("Erreur updateStatutControlleur:", error);

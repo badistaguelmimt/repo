@@ -53,6 +53,22 @@ export async function createReservationControlleur(req, res) {
       return res.status(400).json({ message: "Les dates sont invalides." });
     }
 
+    // Vérifier les conflits de réservation (double booking)
+    const statutAnnule = await resolveStatut("Annulée");
+    const [conflits] = await db.query(
+      `SELECT Id FROM reservation 
+       WHERE IdProfil = ? 
+       AND Statut != ? 
+       AND (
+         (DateDebut < ? AND DateFin > ?)
+       )`,
+      [IdProfil, statutAnnule, end, start]
+    );
+
+    if (conflits.length > 0) {
+      return res.status(409).json({ message: "Le prestataire a déjà une réservation sur ce créneau horaire." });
+    }
+
     // Calculer le prix si non fourni (tarif horaire × durée)
     let prix = Number(PrixFinal ?? 0);
     if (!prix) {
